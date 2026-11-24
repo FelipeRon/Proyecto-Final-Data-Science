@@ -15,6 +15,9 @@ x-app: &app
 services:
   api:
     <<: *app
+    depends_on:
+      mlflow:
+        condition: service_healthy
     ports: ["127.0.0.1:8004:8000"]
   tablero:
     <<: *app
@@ -29,6 +32,11 @@ services:
     build: .
     command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:////app/artifacts/mlflow.db --serve-artifacts --artifacts-destination /app/artifacts/mlruns
     ports: ["127.0.0.1:5003:5000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 24
     volumes:
       - ./artifacts:/app/artifacts
   spark:
@@ -66,6 +74,9 @@ services:
       ENV_HOST_PROJECT_DIR: ${HOST_PROJECT_DIR:-.}
       ENV_PSET4_PROJECT_DIR: ${HOST_PROJECT_DIR:-.}
       ENV_PSET4_SECRETS_DIR: ${KESTRA_SECRETS_DIR:-./secrets}
+      ENV_PSET4_RUNNER_IMAGE: ${KESTRA_RUNNER_IMAGE:-ai4i-pset4:local}
+      ENV_PSET4_TRACKING_URI: ${KESTRA_MLFLOW_URI:-http://host.docker.internal:5003}
+      ENV_PSET4_API_URI: ${KESTRA_PREDICTION_URI:-http://host.docker.internal:8004}
       KESTRA_CONFIGURATION: |
         datasources:
           postgres:

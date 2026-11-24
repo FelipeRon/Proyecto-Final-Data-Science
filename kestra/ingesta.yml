@@ -17,13 +17,16 @@ tasks:
       pullPolicy: NEVER
       volumes:
         - "{{ envs.host_project_dir }}/artifacts:/app/artifacts"
-        - "{{ envs.host_project_dir }}/secrets:/run/secrets:ro"
+        - "{{ envs.pset4_secrets_dir }}:/run/secrets:ro"
         - "{{ envs.host_project_dir }}/.env:/app/runtime.env:ro"
     env:
       SNAPSHOT_INPUT: "{{ inputs.historical_snapshot ?? '' }}"
     commands:
       - set -eu
-      - set -a; . /app/runtime.env; set +a
+      - >-
+        env_copy=$(mktemp); trap 'rm -f "$env_copy"' EXIT;
+        sed 's/\r$//' /app/runtime.env > "$env_copy";
+        set -a; . "$env_copy"; set +a
       - export SOURCE_CSV="$SNAPSHOT_INPUT"
       - export SOURCE_CSV_FALLBACK=/app/artifacts/ai4i2020.csv
       - 'if [ ! -r "$SOURCE_CSV_FALLBACK" ] && [ -r /app/snapshots/ai4i2020.csv ]; then export SOURCE_CSV_FALLBACK=/app/snapshots/ai4i2020.csv; fi'
@@ -43,7 +46,7 @@ errors:
     message: "Falló {{ execution.id }}; revisar RAW, dbt y logs Spark. No publicar resultados de esta ejecución."
 triggers:
   - id: weekly_snapshot_check
-    disabled: false
+    disabled: true
     type: io.kestra.plugin.core.trigger.Schedule
     cron: "0 6 * * 1"
     timezone: America/Guayaquil

@@ -6,7 +6,7 @@ Proyecto final de Ciencia de Datos. Detección de falla en la lectura actual. Ej
 
 Configura la cuenta con `docs/snowflake_setup.sql` y ejecuta el pipeline de ingesta desde la fuente hasta RAW, Bronze, Silver, Gold y OBT. El flow de referencia se incluye en `kestra/ingesta.yml`. Usa la configuración del runner PSET-02, el CSV local si UCI no responde y el rol con acceso a la base PSET2.
 
-En PSET-03, sigue su README para levantar MLflow, extraer `PSET2.OBT.OBT_READINGS`, ejecutar los cinco notebooks y registrar el alias `champion` de `ai4i-mantenimiento-modelo`. El replay usa la OBT en vivo y verifica que coincida por hash con la partición congelada en `docs/split.json`. Los archivos CSV exportados sirven como respaldo de la evidencia.
+Para reproducir el modelo entregado, restaura primero el respaldo de MLflow con los pasos de «Infraestructura integrada». Para entrenar un modelo nuevo, sigue el procedimiento de PSET-03 y registra el alias `champion`. El replay usa la OBT en vivo y verifica que coincida por hash con la partición congelada en `docs/split.json`. Los archivos CSV exportados sirven como respaldo de la evidencia.
 
 ## 2. API y tablero
 
@@ -22,7 +22,7 @@ Invoke-RestMethod http://127.0.0.1:8004/salud
 Invoke-RestMethod http://127.0.0.1:8004/modelo
 ```
 
-La API y OpenAPI están en [8004](http://127.0.0.1:8004/docs). El tablero está en [8504](http://127.0.0.1:8504). En Compose conecta los contenedores al servicio MLflow. La interfaz del registro está en el puerto local 5003. Ajusta `MLFLOW_TRACKING_URI` si el registro reside en otra dirección.
+La API y OpenAPI están en [8004](http://127.0.0.1:8004/docs). El tablero está en [8504](http://127.0.0.1:8504). Compose conecta los contenedores a su propio servicio en `http://mlflow:5000`. La interfaz del registro está en el puerto local 5003. Ajusta `MLFLOW_TRACKING_URI` si el registro reside en otra dirección.
 
 ```powershell
 $body = @{
@@ -74,25 +74,29 @@ Consulta [la auditoría de la rúbrica](docs/auditoria_rubrica.md), [el diseño 
 
 `docker-compose.yml` reúne PostgreSQL, Kestra, MLflow, FastAPI y Streamlit. Spark se ejecuta como trabajo bajo demanda: `docker compose run --rm spark`.
 
-En un checkout limpio, completa las variables privadas de `.env`, incluidos los accesos de Kestra. Para restaurar el registro antes de levantar MLflow:
+En un checkout limpio, completa las variables privadas de `.env`, incluidos los accesos de Kestra. Mantén `MLFLOW_TRACKING_URI=http://mlflow:5000` para usar el registro de este Compose. Restaura el registro antes del primer arranque de MLflow. Ejecuta el bloque siguiente una sola vez por carpeta de trabajo.
 
 ```powershell
+New-Item -ItemType Directory -Force data | Out-Null
+docker compose config --quiet
 docker compose build runner
 docker compose run --rm --no-deps -v "${PWD}/data:/app/data" runner python -m src.portable restore
 docker compose up -d --no-build mlflow kestra api tablero
 ```
 
-Crea `data/` antes de restaurar si Docker no lo crea. `artifacts/` y `data/` son locales. La API sirve el modelo restaurado mediante el alias `champion`. El replay lee la OBT directamente de Snowflake, comprueba el split congelado y escribe las tablas operativas:
+En un equipo con otra copia activa, usa puertos y nombre de proyecto distintos. La variante de Windows con Docker Desktop requiere que el motor pueda compartir la carpeta del repositorio. `artifacts/` y `data/` son locales. La API sirve el modelo restaurado mediante el alias `champion`. El replay lee la OBT directamente de Snowflake, comprueba el split congelado y escribe las tablas operativas:
 
 ```powershell
 docker compose run --rm --no-deps runner
 Invoke-RestMethod http://127.0.0.1:8004/monitoreo
 ```
 
-Para una ejecución desde la fuente, construye `docker compose build spark`, importa los YAML de `kestra/` y ejecuta la ingesta antes del replay. En Docker Desktop usa para `HOST_PROJECT_DIR` y `KESTRA_SECRETS_DIR` las rutas absolutas visibles para el motor Linux. Kestra está en [8080](http://127.0.0.1:8080) y MLflow en [5003](http://127.0.0.1:5003). En otro equipo esos puertos deben estar libres.
+Para una ejecución desde la fuente, construye `docker compose build spark`, importa los YAML de `kestra/` y ejecuta la ingesta antes del replay. El cron de ingesta se entrega deshabilitado para que su ejecución sea explícita. Para comprobar la conexión sin escribir datos, ejecuta `docker compose run --rm spark dbt debug --project-dir /app/dbt --profiles-dir /app/dbt`. En Docker Desktop usa para `HOST_PROJECT_DIR` y `KESTRA_SECRETS_DIR` las rutas absolutas visibles para el motor Linux. Kestra está en [8080](http://127.0.0.1:8080) y MLflow en [5003](http://127.0.0.1:5003). En otro equipo esos puertos deben estar libres. Importa primero `kestra/monitoreo.yml` y después `kestra/produccion_lotes.yml` para ejecutar el replay orquestado. Los runners de Kestra usan `KESTRA_MLFLOW_URI` y `KESTRA_PREDICTION_URI` para acceder a los puertos del host y `KESTRA_RUNNER_IMAGE` para el tag de la imagen de PSET-04.
 
 - [Memo técnico](docs/PSet4_memo_Ron_Andrade.pdf)
 - [Presentación ejecutiva](docs/PSet4_presentacion_Ron_Andrade.pdf)
 - [Resultados para dos audiencias](docs/PSet4_resultados_dos_audiencias.pdf)
 - [Historial de los PSets](docs/historial/)
 - [Auditoría de la rúbrica](docs/auditoria_rubrica.md)
+
+La [verificación desde un clon limpio](docs/verificacion_reproducibilidad.md) documenta los requisitos, las pruebas y los límites observados.

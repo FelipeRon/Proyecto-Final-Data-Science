@@ -3,7 +3,7 @@ namespace: pset4
 tasks:
   - id: alertas
     type: io.kestra.plugin.scripts.shell.Commands
-    containerImage: ai4i-pset4:local
+    containerImage: "{{ envs.pset4_runner_image }}"
     taskRunner:
       type: io.kestra.plugin.scripts.runner.docker.Docker
       pullPolicy: NEVER
@@ -12,4 +12,4 @@ tasks:
     commands:
       - >-
         python -c 'import json, urllib.request;
-        print(json.load(urllib.request.urlopen("http://host.docker.internal:8004/monitoreo", timeout=30)))'
+        print(json.load(urllib.request.urlopen("{{ envs.pset4_api_uri }}/monitoreo", timeout=30)))'

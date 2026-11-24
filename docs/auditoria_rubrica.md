@@ -5,7 +5,7 @@ Evaluación técnica orientativa basada en la rúbrica del 4 de noviembre de 202
 | Criterio | Nivel estimado | Evidencia |
 |---|---:|---|
 | Patrón de despliegue | 4/4 | `despliegue.md` justifica batch cada 15 minutos, respuesta dentro de 5 minutos desde el cierre y la pérdida de inmediatez frente a online. Los números son supuestos del piloto. |
-| Servicio y pruebas | 3/4 | Imagen construida y levantada con Compose. Predicción registrada en Snowflake y respuesta HTTP 422 al omitir torque. Pipeline compartido, dependencias principales fijadas y 16 pruebas en Docker. GitHub Actions del commit de entrega queda pendiente. |
+| Servicio y pruebas | 4/4 con CI verde | Imagen construida y levantada con Compose. Predicción registrada en Snowflake y respuesta HTTP 422 al omitir torque. Pipeline compartido, dependencias principales fijadas y 16 pruebas en Docker. El workflow CI debe estar en verde para el commit evaluado. |
 | Registro y versionado | 4/4 | La API resolvió el alias champion, v1, run d07d9f7f061848138579716948af2c6f de PSET-03. `despliegue.md` documenta promoción y reversión. |
 | Monitoreo y deriva | 4/4 | Replay directo de Snowflake y verificación del tablero. El notebook ejecutado separa desplazamiento de torque de un cambio inducido de la relación entrada/etiqueta. GET /monitoreo expone la alerta operativa. |
 | Comunicación y retirada | 4/4 | Dos versiones de la diapositiva de resultados y `criterio_retirada.md`, con condiciones medibles de capacidad, costo y trazabilidad. |
@@ -18,6 +18,6 @@ El mayor PSI de los controles fue 0,0720 y el del lote alterado 2,6330. El valor
 
 ## Pendientes de entrega
 
-Para el nivel máximo de la rúbrica extendida queda ejecutar GitHub Actions en el commit que se entregue y conservar el enlace de la corrida en verde. La carpeta local no está configurada como repositorio Git de PSET-04.
+El [CI del primer commit](https://github.com/FelipeRon/Proyecto-Final-Data-Science/actions/runs/45466217941) pasó. Para calificar el commit de entrega, consulta su propia ejecución de CI.
 
-Para la consigna original también quedan comprobar el disparador por métrica y la aprobación en Kestra, demostrar promoción y rollback en un registro aislado, verificar un Compose único con toda la infraestructura, publicar la imagen en GHCR y grabar/enlazar el video de hasta siete minutos. El replay, la API, el tablero y la simulación de deriva sí se verificaron desde Docker contra Snowflake.
+La [verificación desde un clon limpio](verificacion_reproducibilidad.md) cubre el Compose integrado, Snowflake, Kestra, el rollback y el reentrenamiento aislado. Para la consigna original quedan la prueba integral de RAW a OBT en una cuenta nueva, el disparo por métrica y la aprobación en Kestra, la publicación de la imagen en GHCR y el video.

@@ -3,7 +3,7 @@ namespace: pset4
 tasks:
   - id: replay
     type: io.kestra.plugin.scripts.shell.Commands
-    containerImage: ai4i-pset4:local
+    containerImage: "{{ envs.pset4_runner_image }}"
     taskRunner:
       type: io.kestra.plugin.scripts.runner.docker.Docker
       pullPolicy: NEVER
@@ -12,11 +12,14 @@ tasks:
         - "{{ envs.pset4_secrets_dir }}:/run/secrets:ro"
     env:
       PSET4_BACKEND: snowflake
-      MLFLOW_TRACKING_URI: http://host.docker.internal:5003
+      KESTRA_TRACKING_URI: "{{ envs.pset4_tracking_uri }}"
     commands:
-      - set -a; . /app/.env; set +a
-      - export PSET4_BACKEND=snowflake
-      - python -m monitoreo.replay
+      - >-
+        env_copy=$(mktemp); trap 'rm -f "$env_copy"' EXIT;
+        sed 's/\r$//' /app/.env > "$env_copy";
+        set -a; . "$env_copy"; set +a
+      - export PSET4_BACKEND=snowflake MLFLOW_TRACKING_URI="$KESTRA_TRACKING_URI"
+      - cd /app && python -m monitoreo.replay
   - id: monitoreo
     type: io.kestra.plugin.core.flow.Subflow
     namespace: pset4
