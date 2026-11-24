@@ -1,0 +1,16 @@
+.git
+.env
+.venv
+secrets
+data
+artifacts
+__pycache__
+.pytest_cache
+docs/mlflow_snapshot.zip
+docs/mlflow_snapshot.zip
+.git
+.env*
+secrets
+artifacts
+data
+**/__pycache__

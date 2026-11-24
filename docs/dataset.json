@@ -1,0 +1,10 @@
+{
+  "source": "snowflake",
+  "table": "PSET2.OBT.OBT_READINGS",
+  "query_id": "01c88001-0001-db36-0001-77be00211006",
+  "scope": "OBT real exportada de Snowflake",
+  "snapshot_utc": "2026-11-18T19:45:16.585947+00:00",
+  "dataset_sha256": "dbdb2601fec1714c56141c3b24833f6fb671342cadb68d516238a58cbb9f9e1e",
+  "rows": 10000,
+  "target_failures": 339
+}

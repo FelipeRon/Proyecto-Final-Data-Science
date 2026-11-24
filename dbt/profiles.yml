@@ -1,0 +1,18 @@
+ai4i:
+  target: "{{ env_var('DBT_TARGET', 'snowflake') }}"
+  outputs:
+    snowflake:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT', 'unset') }}"
+      user: "{{ env_var('SNOWFLAKE_USER', 'unset') }}"
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_FILE', '/run/secrets/snowflake_key.p8') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE', 'PSET2_ROLE') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'PSET2_WH') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE', 'PSET2') }}"
+      schema: BRONZE
+      threads: 2
+    local:
+      type: duckdb
+      path: "{{ env_var('LOCAL_DB_PATH', '/app/artifacts/local.duckdb') }}"
+      schema: main
+      threads: 2

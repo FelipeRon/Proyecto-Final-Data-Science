@@ -1,0 +1,7 @@
+version: 2
+sources:
+  - name: ai4i
+    schema: RAW
+    tables:
+      - name: AI4I
+        description: Raw strings plus immutable CSV hash, source row and ingestion timestamp. No event timestamp exists.

@@ -1,0 +1,38 @@
+{
+  "dataframe_split": {
+    "columns": [
+      "product_type",
+      "air_temperature_k",
+      "process_temperature_k",
+      "rotational_speed_rpm",
+      "torque_nm",
+      "tool_wear_min"
+    ],
+    "data": [
+      [
+        "L",
+        298.2,
+        308.7,
+        1408.0,
+        46.3,
+        3.0
+      ],
+      [
+        "L",
+        298.2,
+        308.7,
+        1408.0,
+        40.0,
+        9.0
+      ],
+      [
+        "M",
+        298.1,
+        308.6,
+        1425.0,
+        41.9,
+        11.0
+      ]
+    ]
+  }
+}

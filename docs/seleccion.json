@@ -1,0 +1,140 @@
+{
+  "model_name": "ai4i-mantenimiento-modelo",
+  "models": [
+    {
+      "name": "hist_boosting/config_17",
+      "phase": "tuning",
+      "run_id": "d520cc5a52a54790b0aa3865fc2555fc",
+      "cv_ap_mean": 0.8787806712872027,
+      "cv_ap_std": 0.026033407825595073,
+      "train_ap": 0.9774987043044862,
+      "fold_train_ap_mean": 0.9821979762669705,
+      "cv_cost_per_1000": 124312.64452783612,
+      "fit_seconds": 0.104064216999177,
+      "cv_fit_seconds": 0.24606669700006023,
+      "gap_ap": 0.09871803301728344,
+      "fold_ap": [
+        0.8935207006056531,
+        0.8940995740720112,
+        0.848721739183944
+      ],
+      "params": {
+        "model__l2_regularization": 6.703112932069452,
+        "model__learning_rate": 0.1035041273903399,
+        "model__max_iter": 90,
+        "model__max_leaf_nodes": 21,
+        "model__min_samples_leaf": 10
+      },
+      "warnings": 0,
+      "learning_rate": 0.1035041273903399,
+      "threshold": 0.09063643135223154,
+      "oof_business": {
+        "ap": 0.8772471579198398,
+        "roc_auc": 0.9812967789401016,
+        "recall": 0.8745387453874539,
+        "precision": 0.5895522388059702,
+        "f1": 0.7043090638930164,
+        "cost_per_1000": 103562.5,
+        "alert_rate": 0.05025,
+        "tp": 237,
+        "fp": 165,
+        "fn": 34,
+        "tn": 7564
+      },
+      "alias": "champion",
+      "final_run_id": "d07d9f7f061848138579716948af2c6f",
+      "version": "1",
+      "test": {
+        "ap": 0.9098503380639453,
+        "roc_auc": 0.9852636706856656,
+        "recall": 0.8970588235294118,
+        "precision": 0.6288659793814433,
+        "f1": 0.7393939393939394,
+        "cost_per_1000": 98000.0,
+        "alert_rate": 0.0485,
+        "tp": 61,
+        "fp": 36,
+        "fn": 7,
+        "tn": 1896
+      },
+      "inference_seconds": 0.011063840000133496
+    },
+    {
+      "name": "random_forest/config_13",
+      "phase": "tuning",
+      "run_id": "edb3623fd7b948c29d6be6555fd343ea",
+      "cv_ap_mean": 0.8730247496587008,
+      "cv_ap_std": 0.03390774676845306,
+      "train_ap": 0.957852990085486,
+      "fold_train_ap_mean": 0.9568501232334169,
+      "cv_cost_per_1000": 127250.26963527534,
+      "fit_seconds": 1.3380313269990438,
+      "cv_fit_seconds": 2.62517598499835,
+      "gap_ap": 0.08482824042678516,
+      "fold_ap": [
+        0.9010105238513754,
+        0.8827454161349729,
+        0.8353183089897542
+      ],
+      "params": {
+        "model__class_weight": null,
+        "model__max_depth": 10,
+        "model__max_features": 1.0,
+        "model__min_samples_leaf": 8,
+        "model__n_estimators": 96
+      },
+      "warnings": 0,
+      "learning_rate": null,
+      "threshold": 0.07845214747115606,
+      "oof_business": {
+        "ap": 0.8696751707740886,
+        "roc_auc": 0.9756941676028223,
+        "recall": 0.9003690036900369,
+        "precision": 0.46476190476190476,
+        "f1": 0.6130653266331658,
+        "cost_per_1000": 105562.5,
+        "alert_rate": 0.065625,
+        "tp": 244,
+        "fp": 281,
+        "fn": 27,
+        "tn": 7448
+      },
+      "alias": "challenger",
+      "final_run_id": "1bb7401579664e38af7d1ab7e1bb8ea9",
+      "version": "2",
+      "test": {
+        "ap": 0.8933236210766702,
+        "roc_auc": 0.9776024540250883,
+        "recall": 0.9117647058823529,
+        "precision": 0.4626865671641791,
+        "f1": 0.6138613861386139,
+        "cost_per_1000": 104000.0,
+        "alert_rate": 0.067,
+        "tp": 62,
+        "fp": 72,
+        "fn": 6,
+        "tn": 1860
+      },
+      "inference_seconds": 0.011019494999345625
+    }
+  ],
+  "cv_difference": 0.005755921628501914,
+  "difference_exceeds_fold_std": false,
+  "holdout_policy": "Evaluado una vez para cada finalista; no cambia el ranking de CV",
+  "source": {
+    "source": "snowflake",
+    "table": "PSET2.OBT.OBT_READINGS",
+    "query_id": "01c88001-0001-db36-0001-77be00211006",
+    "scope": "OBT real exportada de Snowflake",
+    "snapshot_utc": "2026-11-18T19:45:16.585947+00:00",
+    "dataset_sha256": "dbdb2601fec1714c56141c3b24833f6fb671342cadb68d516238a58cbb9f9e1e",
+    "rows": 10000,
+    "target_failures": 339
+  },
+  "cost_assumptions": {
+    "inspection": 500,
+    "emergency": 8000,
+    "residual": 1500,
+    "capacity": 0.12
+  }
+}

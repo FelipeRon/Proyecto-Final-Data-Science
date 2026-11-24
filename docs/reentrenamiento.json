@@ -1,0 +1,73 @@
+{
+  "run_id": "17a1183d2fa14ccd9488cb2fc3a2d370",
+  "version": "3",
+  "disparador": "calendario al madurar 6 lotes",
+  "filas_entrenamiento": 9500,
+  "champion_version": "1",
+  "mejora_media_costo": -8000.0,
+  "dispersion_cv_costo": 1605.948090472487,
+  "califica": false,
+  "promovido": false,
+  "evaluacion": [
+    {
+      "periodo": 7,
+      "champion": {
+        "ap": 0.8759615384615385,
+        "roc_auc": 0.9891528925619835,
+        "recall": 0.875,
+        "precision": 0.7,
+        "f1": 0.7777777777777778,
+        "cost_per_1000": 94000.0,
+        "alert_rate": 0.04,
+        "tp": 7,
+        "fp": 3,
+        "fn": 1,
+        "tn": 239
+      },
+      "candidato": {
+        "ap": 0.8328373015873015,
+        "roc_auc": 0.9824380165289256,
+        "recall": 0.875,
+        "precision": 0.4375,
+        "f1": 0.5833333333333334,
+        "cost_per_1000": 106000.0,
+        "alert_rate": 0.064,
+        "tp": 7,
+        "fp": 9,
+        "fn": 1,
+        "tn": 233
+      },
+      "mejora_costo": -12000.0
+    },
+    {
+      "periodo": 8,
+      "champion": {
+        "ap": 0.7067173023055375,
+        "roc_auc": 0.9302685950413223,
+        "recall": 0.625,
+        "precision": 0.5555555555555556,
+        "f1": 0.5882352941176471,
+        "cost_per_1000": 144000.0,
+        "alert_rate": 0.036,
+        "tp": 5,
+        "fp": 4,
+        "fn": 3,
+        "tn": 238
+      },
+      "candidato": {
+        "ap": 0.6755696509372979,
+        "roc_auc": 0.9323347107438017,
+        "recall": 0.625,
+        "precision": 0.45454545454545453,
+        "f1": 0.5263157894736842,
+        "cost_per_1000": 148000.0,
+        "alert_rate": 0.044,
+        "tp": 5,
+        "fp": 6,
+        "fn": 3,
+        "tn": 236
+      },
+      "mejora_costo": -4000.0
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+run_id,version,disparador,filas_entrenamiento,champion_version,mejora_media_costo,dispersion_cv_costo,califica,promovido
+17a1183d2fa14ccd9488cb2fc3a2d370,3,calendario al madurar 6 lotes,9500,1,-8000.0,1605.948090472487,False,False

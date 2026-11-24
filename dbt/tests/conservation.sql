@@ -1,0 +1,1 @@
+select 1 where (select count(*) from {{ ref('stg_readings') }}) <> (select count(*) from {{ ref('int_readings') }}) + (select count(*) from {{ ref('int_quarantine') }}) or (select count(*) from {{ ref('fct_reading') }}) <> (select count(*) from {{ ref('int_readings') }})

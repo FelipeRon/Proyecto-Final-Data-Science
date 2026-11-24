@@ -1,0 +1,70 @@
+{
+  "source": "snowflake",
+  "dataset_sha256": "dbdb2601fec1714c56141c3b24833f6fb671342cadb68d516238a58cbb9f9e1e",
+  "checkpoint": "https://raw.githubusercontent.com/automl/TabPFN/tabpfn_v1/tabpfn/models_diff/prior_diff_real_checkpoint_n_0_epoch_42.cpkt",
+  "checkpoint_sha256": "3c9aadaeddbf51462af8c0ee4b3ca3c697890f77e92318abbb0821b75261c392",
+  "package": "tabpfn==0.1.11",
+  "scope": "CV en train; contexto estratificado de 768 filas por fold; sin ajuste de pesos.",
+  "metrics": {
+    "cv_ap_mean": 0.5672673028785388,
+    "cv_ap_std": 0.09966721128257545,
+    "cv_cost_per_1000": 204876.06903600667
+  },
+  "folds": [
+    {
+      "fold": 1,
+      "context": 768,
+      "validation": 2667,
+      "fit_seconds": 0.0013605369999964978,
+      "inference_seconds": 15.114913673999993,
+      "ap": 0.6608296843463867,
+      "roc_auc": 0.9556159185961282,
+      "recall": 0.4444444444444444,
+      "precision": 0.7692307692307693,
+      "f1": 0.5633802816901409,
+      "cost_per_1000": 182227.22159730035,
+      "alert_rate": 0.01949756280464942,
+      "tp": 40,
+      "fp": 12,
+      "fn": 50,
+      "tn": 2565
+    },
+    {
+      "fold": 2,
+      "context": 768,
+      "validation": 2667,
+      "fit_seconds": 0.00026683999999477237,
+      "inference_seconds": 14.866097843999995,
+      "ap": 0.5785215632533484,
+      "roc_auc": 0.9562145928605557,
+      "recall": 0.27472527472527475,
+      "precision": 0.6756756756756757,
+      "f1": 0.390625,
+      "cost_per_1000": 218972.62842144733,
+      "alert_rate": 0.013873265841769778,
+      "tp": 25,
+      "fp": 12,
+      "fn": 66,
+      "tn": 2564
+    },
+    {
+      "fold": 3,
+      "context": 768,
+      "validation": 2666,
+      "fit_seconds": 0.0003999179999993885,
+      "inference_seconds": 15.576348953000007,
+      "ap": 0.4624506610358811,
+      "roc_auc": 0.9024715320910972,
+      "recall": 0.3,
+      "precision": 0.5510204081632653,
+      "f1": 0.38848920863309355,
+      "cost_per_1000": 213428.35708927232,
+      "alert_rate": 0.01837959489872468,
+      "tp": 27,
+      "fp": 22,
+      "fn": 63,
+      "tn": 2554
+    }
+  ],
+  "run_id": "747d91c2bc98479299cb1a321d14dfe6"
+}

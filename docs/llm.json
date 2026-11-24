@@ -1,0 +1,25 @@
+{
+  "status": "executed",
+  "model": "ChatGPT web (versión interna no visible)",
+  "date": "2026-11-20",
+  "rows": 60,
+  "positive_rows": 3,
+  "threshold": 0.5,
+  "metrics": {
+    "ap": 0.1410569105691057,
+    "roc_auc": 0.6929824561403509,
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "cost_per_1000": 400000.0,
+    "alert_rate": 0.0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 3,
+    "tn": 57
+  },
+  "dataset_sha256": "dbdb2601fec1714c56141c3b24833f6fb671342cadb68d516238a58cbb9f9e1e",
+  "protocol": "3 chats independientes. 6 ejemplos etiquetados y 20 consultas ciegas por fold. Solo train.",
+  "scope": "Prueba exploratoria. La muestra pequeña no interviene en la selección del champion.",
+  "run_id": "006d039ede6d4ba0994c72dda6e38817"
+}

@@ -1,0 +1,9 @@
+.env
+secrets/
+artifacts/
+__pycache__/
+.pytest_cache/
+data/
+*.p8
+*.pem
+.ipynb_checkpoints/

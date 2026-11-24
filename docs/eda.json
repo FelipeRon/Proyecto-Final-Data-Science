@@ -1,0 +1,87 @@
+{
+  "scope": "train_only",
+  "train_rows": 8000,
+  "holdout_rows": 2000,
+  "positives_train": 271,
+  "prevalence_train": 0.033875,
+  "source_scope": "OBT real exportada de Snowflake",
+  "feature_target_spearman": {
+    "air_temperature_k": 0.08639466254461013,
+    "process_temperature_k": 0.04459694159495342,
+    "rotational_speed_rpm": -0.16353538052426117,
+    "torque_nm": 0.16783562372210317,
+    "tool_wear_min": 0.09518787844667435,
+    "temperature_delta_k": -0.10146503892812514,
+    "power_w": 0.15319652038547238
+  },
+  "findings": [
+    {
+      "finding": "Desbalance",
+      "evidence": "3.39% fallas en train",
+      "consequence": "AP como métrica principal; CV estratificada; accuracy no decide."
+    },
+    {
+      "finding": "Colas físicas",
+      "evidence": [
+        {
+          "feature": "air_temperature_k",
+          "iqr_outliers": 0,
+          "abs_z_ge_3": 0,
+          "iqr_low": 293.5,
+          "iqr_high": 306.29999999999995
+        },
+        {
+          "feature": "process_temperature_k",
+          "iqr_outliers": 0,
+          "abs_z_ge_3": 0,
+          "iqr_low": 305.35,
+          "iqr_high": 314.55000000000007
+        },
+        {
+          "feature": "rotational_speed_rpm",
+          "iqr_outliers": 331,
+          "abs_z_ge_3": 138,
+          "iqr_low": 1135.5,
+          "iqr_high": 1899.5
+        },
+        {
+          "feature": "torque_nm",
+          "iqr_outliers": 56,
+          "abs_z_ge_3": 19,
+          "iqr_low": 12.800000000000011,
+          "iqr_high": 67.19999999999999
+        },
+        {
+          "feature": "tool_wear_min",
+          "iqr_outliers": 0,
+          "abs_z_ge_3": 0,
+          "iqr_low": -112.0,
+          "iqr_high": 328.0
+        },
+        {
+          "feature": "temperature_delta_k",
+          "iqr_outliers": 0,
+          "abs_z_ge_3": 0,
+          "iqr_low": 6.749999999999886,
+          "iqr_high": 13.550000000000068
+        },
+        {
+          "feature": "power_w",
+          "iqr_outliers": 50,
+          "abs_z_ge_3": 24,
+          "iqr_low": 3378.21348526736,
+          "iqr_high": 9195.259746482803
+        }
+      ],
+      "consequence": "Conservar extremos; comparar modelos no lineales; no recortar globalmente."
+    },
+    {
+      "finding": "Variables físicas acopladas",
+      "evidence": {
+        "temp_delta_spearman": -0.10146503892812514,
+        "power_spearman": 0.15319652038547238
+      },
+      "consequence": "Derivar diferencia térmica y potencia en el pipeline, y comprobar aporte mediante ablation en CV."
+    }
+  ]
+}

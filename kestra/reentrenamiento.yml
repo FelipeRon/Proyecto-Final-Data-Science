@@ -1,0 +1,21 @@
+id: reentrenamiento
+namespace: pset4
+tasks:
+  - id: evaluar_candidato
+    type: io.kestra.plugin.scripts.shell.Commands
+    containerImage: ai4i-pset4:local
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      pullPolicy: NEVER
+      volumes:
+        - "{{ envs.pset4_project_dir }}:/app"
+        - "{{ envs.pset4_secrets_dir }}:/run/secrets:ro"
+    env:
+      MLFLOW_TRACKING_URI: http://host.docker.internal:5003
+    commands:
+      - set -a; . /app/.env; set +a
+      - export PSET4_BACKEND=snowflake
+      - python -m src.reentrenar
+  - id: revision_manual
+    type: io.kestra.plugin.core.flow.Pause
+    delay: PT24H

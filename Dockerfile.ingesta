@@ -1,0 +1,9 @@
+FROM python:3.11.11-slim-bookworm
+RUN apt-get update && apt-get install -y --no-install-recommends openjdk-17-jre-headless curl && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY requirements-ingesta.lock ./
+RUN pip install --no-cache-dir -r requirements-ingesta.lock
+COPY kestra/scripts kestra/scripts
+COPY dbt dbt
+COPY spark spark
+ENV SPARK_LOCAL_IP=127.0.0.1 DBT_PROFILES_DIR=/app/dbt PYTHONPATH=/app/kestra/scripts

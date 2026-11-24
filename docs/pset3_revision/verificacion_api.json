@@ -1,0 +1,19 @@
+{
+  "model": {
+    "nombre": "ai4i-mantenimiento-modelo",
+    "version": "1",
+    "alias": "champion",
+    "run_id": "d07d9f7f061848138579716948af2c6f",
+    "respaldo": false
+  },
+  "prediction": {
+    "id_prediccion": "b0faf649-deab-4116-96e5-87a296e5d1d7",
+    "probabilidad": 0.00028353954009929154,
+    "decision": "continuar",
+    "version_modelo": "1",
+    "run_id": "d07d9f7f061848138579716948af2c6f",
+    "respaldo": false
+  },
+  "leakage_status": 422,
+  "tests": 12
+}

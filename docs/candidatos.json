@@ -1,0 +1,149 @@
+[
+  {
+    "name": "dummy",
+    "phase": "baseline",
+    "run_id": "ce60cc0838084d2e9b1fbb20cdf2d504",
+    "cv_ap_mean": 0.03387498543177227,
+    "cv_ap_std": 0.00021291937213802992,
+    "train_ap": 0.033875,
+    "fold_train_ap_mean": 0.033874996358626,
+    "cv_cost_per_1000": 270999.88345417817,
+    "fit_seconds": 0.009023980999700143,
+    "cv_fit_seconds": 0.03159069299908879,
+    "gap_ap": 1.456822773526767e-08,
+    "fold_ap": [
+      0.03374578177727784,
+      0.03412073490813648,
+      0.03375843960990248
+    ],
+    "params": {},
+    "warnings": 0,
+    "learning_rate": null
+  },
+  {
+    "name": "business_rule",
+    "phase": "baseline",
+    "run_id": "c1bd50d09be44c93bbd4f41b5f5e2173",
+    "cv_ap_mean": 0.13501129414272547,
+    "cv_ap_std": 0.028939027325672953,
+    "train_ap": 0.1340744134493584,
+    "fold_train_ap_mean": 0.13429736146998508,
+    "cv_cost_per_1000": 189627.4827987087,
+    "fit_seconds": 0.0010630409997247625,
+    "cv_fit_seconds": 0.004518924999501905,
+    "gap_ap": -0.000936880693367087,
+    "fold_ap": [
+      0.16067235255013415,
+      0.14071721183735408,
+      0.10364431804068822
+    ],
+    "params": {},
+    "warnings": 0,
+    "learning_rate": null
+  },
+  {
+    "name": "logistic",
+    "phase": "candidato",
+    "run_id": "7a4ebb4ac06c4414ba85910448265712",
+    "cv_ap_mean": 0.49828613515981185,
+    "cv_ap_std": 0.06988122116184939,
+    "train_ap": 0.505526801607444,
+    "fold_train_ap_mean": 0.5061507655206374,
+    "cv_cost_per_1000": 221000.9757782528,
+    "fit_seconds": 0.013153943998986506,
+    "cv_fit_seconds": 0.035739767999984906,
+    "gap_ap": 0.00724066644763216,
+    "fold_ap": [
+      0.5043061131608355,
+      0.5649626223919358,
+      0.4255896699266644
+    ],
+    "params": {},
+    "warnings": 0,
+    "learning_rate": null
+  },
+  {
+    "name": "random_forest",
+    "phase": "candidato",
+    "run_id": "9b518295ce8a40e98bcb622f9c48aac7",
+    "cv_ap_mean": 0.868114867252574,
+    "cv_ap_std": 0.04176152959600474,
+    "train_ap": 1.0,
+    "fold_train_ap_mean": 1.0,
+    "cv_cost_per_1000": 129812.4259223786,
+    "fit_seconds": 0.6000271119992249,
+    "cv_fit_seconds": 1.313889190001646,
+    "gap_ap": 0.13188513274742597,
+    "fold_ap": [
+      0.9003791546278862,
+      0.883019591549952,
+      0.8209458555798839
+    ],
+    "params": {},
+    "warnings": 0,
+    "learning_rate": null
+  },
+  {
+    "name": "hist_boosting",
+    "phase": "candidato",
+    "run_id": "5dac6d2cbb32455aad5a72c456841c89",
+    "cv_ap_mean": 0.8783308704569471,
+    "cv_ap_std": 0.03568409005261371,
+    "train_ap": 1.0,
+    "fold_train_ap_mean": 1.0,
+    "cv_cost_per_1000": 121312.69131493598,
+    "fit_seconds": 0.12892676199953712,
+    "cv_fit_seconds": 0.376169667000795,
+    "gap_ap": 0.12166912954305287,
+    "fold_ap": [
+      0.8942159190447586,
+      0.903314068727705,
+      0.8374626235983779
+    ],
+    "params": {},
+    "warnings": 0,
+    "learning_rate": 0.1
+  },
+  {
+    "name": "mlp",
+    "phase": "candidato",
+    "run_id": "dd89b550da4f4111b5af7f67f5edbdb0",
+    "cv_ap_mean": 0.7535595971651229,
+    "cv_ap_std": 0.05231607842927058,
+    "train_ap": 0.8683669466674081,
+    "fold_train_ap_mean": 0.8584929495729762,
+    "cv_cost_per_1000": 164127.482001734,
+    "fit_seconds": 1.7258244260010542,
+    "cv_fit_seconds": 3.434191270000156,
+    "gap_ap": 0.11480734950228522,
+    "fold_ap": [
+      0.7608020699992671,
+      0.8018770939117756,
+      0.6979996275843261
+    ],
+    "params": {},
+    "warnings": 4,
+    "learning_rate": "constant"
+  },
+  {
+    "name": "gaussian_nb",
+    "phase": "candidato",
+    "run_id": "816e02646d994180847176189245deca",
+    "cv_ap_mean": 0.3793690868662282,
+    "cv_ap_std": 0.01911629024460669,
+    "train_ap": 0.3760867440105949,
+    "fold_train_ap_mean": 0.3800100653615924,
+    "cv_cost_per_1000": 193688.86559847687,
+    "fit_seconds": 0.00897418599925004,
+    "cv_fit_seconds": 0.026494032999835326,
+    "gap_ap": -0.0032823428556333356,
+    "fold_ap": [
+      0.38500143891008876,
+      0.3950364172907642,
+      0.3580694043978317
+    ],
+    "params": {},
+    "warnings": 0,
+    "learning_rate": null
+  }
+]

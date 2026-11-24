@@ -1,0 +1,46 @@
+{
+  "source": "snowflake",
+  "dataset_sha256": "dbdb2601fec1714c56141c3b24833f6fb671342cadb68d516238a58cbb9f9e1e",
+  "train_rows": 8000,
+  "inputs": [
+    {
+      "feature": "product_type",
+      "unit": "L / M / H",
+      "missing": 0,
+      "invalid": 0
+    },
+    {
+      "feature": "air_temperature_k",
+      "unit": "K",
+      "missing": 0,
+      "invalid": 0
+    },
+    {
+      "feature": "process_temperature_k",
+      "unit": "K",
+      "missing": 0,
+      "invalid": 0
+    },
+    {
+      "feature": "rotational_speed_rpm",
+      "unit": "rpm",
+      "missing": 0,
+      "invalid": 0
+    },
+    {
+      "feature": "torque_nm",
+      "unit": "Nm",
+      "missing": 0,
+      "invalid": 0
+    },
+    {
+      "feature": "tool_wear_min",
+      "unit": "min",
+      "missing": 0,
+      "invalid": 0
+    }
+  ],
+  "invariant_to_target_and_audit_columns": true,
+  "single_reading_equivalent_to_batch": true,
+  "derived_from_current_reading": true
+}

@@ -1,0 +1,15 @@
+{
+  "query_id": "01c8a18f-0001-dff7-0001-77be0026008a",
+  "http_missing": 422,
+  "snowflake": {
+    "replay_predictions": 2000,
+    "periods": 8,
+    "alerts": 1,
+    "api_record_persisted": true,
+    "dashboard_rendered": true
+  },
+  "test_result": "16 passed, 3 warnings in 3.03s",
+  "api_prediction_id": "f065a9e9-7290-45f5-a1e6-df4c635c6596",
+  "model": "1",
+  "run_id": "d07d9f7f061848138579716948af2c6f"
+}
