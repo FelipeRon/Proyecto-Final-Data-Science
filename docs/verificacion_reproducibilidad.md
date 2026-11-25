@@ -46,3 +46,33 @@ Sobre el snapshot de MLflow actualizado (alias `challenger` en la versión 3 y t
 - `src.promover --decision rechazar` dejó `champion` en 1 y etiquetó la versión; `--decision promover` fue bloqueado por la regla de promoción.
 
 Esta ronda no usó Kestra ni Snowflake: el ciclo se ejecutó con los mismos módulos que llaman los flujos. Las salidas de la versión 4 quedaron solo en ese registro de prueba.
+
+## Cuarta verificación: ciclo de Kestra contra Snowflake
+
+El 25 de noviembre de 2026 se repitió el ciclo completo sobre `058db03` desde un clon nuevo, en el equipo de desarrollo con Windows y Docker Desktop, con la cuenta de Snowflake del proyecto. Se usó un Compose aislado (`-p pf-verif-058`, puertos 28080, 28004, 25003 y 28504) con imágenes construidas desde el clon y un MLflow propio restaurado desde `docs/mlflow_snapshot.zip`. El registro real no se modificó.
+
+- **Replay y monitoreo.** La ejecución de Kestra `6KqcWW5Oj7kS1Z5kGK6rJf` de `produccion_lotes` leyó `PSET2.OBT.OBT_READINGS` (Query ID `01c8a661-0001-e07f-0001-77be00269e86`, SHA-256 `dbdb2601…9e1e`, igual al de `docs/split.json`) y registró 2.000 predicciones, ocho lotes y una alerta de PSI. Las métricas de los ocho lotes coinciden con `docs/monitoreo.csv`; solo cambian las latencias y el Query ID.
+- **Alertas.** El subflujo `monitoreo` (`yux1c9BOTl5vdnZRGaaQs`) registró un WARN con cuatro alertas: PSI 2,633, caída de AP 0,668 y tasa de inspección 62,4 % en el lote 6, y caída de AP 0,707 en el lote 8. Lanzó `reentrenamiento` por «deriva de datos con impacto en el lote 6» y guardó la firma en el KV. Una segunda ejecución de `monitoreo` (`mZ3j8280J1ILlYqFLljc2`) repitió el WARN y no volvió a lanzar el reentrenamiento («el evento ya se procesó»).
+- **Reentrenamiento y aprobación.** La ejecución `ml49BBtPSHIoshCf2nodc` registró la versión 4 con alias `challenger` y quedó en pausa con el resumen para aprobación. Se reanudó con `rechazar`: `champion` siguió en 1, la versión 4 quedó etiquetada con la decisión y `verificar_api` leyó la versión 1 en `/modelo`.
+- **Bloqueo de la promoción.** En `1HbXsDSW3QCj0NondybdIm` se reanudó con `promover` un candidato que no califica. `aplicar_decision` falló con «El candidato no cumple el criterio de promoción» y `champion` no cambió.
+- **Movimiento del alias.** Para recorrer la rama de promoción, en `2ToudARn0Yz27bzgYX2MMi` se marcó a mano `califica=true` en el `docs/reentrenamiento.json` del clon durante la pausa, solo en el registro aislado. Al reanudar con `promover`, `champion` pasó a la versión 6 y `verificar_api` y `GET /modelo` devolvieron esa versión. Después se devolvió `champion` a la versión 1 y `/modelo` lo reflejó.
+
+### Fallo encontrado y corregido
+
+Con Snowflake, el primer reentrenamiento obtuvo una mejora media de −USD 12.000 por 1.000 lecturas (−24.000 y 0 en los lotes 7 y 8), frente a −USD 8.000 (−12.000 y −4.000) del ciclo documentado y del backend local. La primera verificación ya había visto la misma diferencia. La causa es el orden de las filas: `read_rows` devuelve `OBT.PREDICCIONES` ordenada por `ID_PREDICCION`, que es un UUID, mientras que el CSV local conserva el orden del replay. Ese orden cambia los pliegues de la validación cruzada y, con ellos, el umbral y el candidato.
+
+La rama `fix/orden-reentrenamiento-snowflake` reordena las predicciones leídas de Snowflake con el mismo orden del replay (`monitoreo.replay.orden_replay`) y añade una prueba. Con el arreglo, el reentrenamiento orquestado `1HbXsDSW3QCj0NondybdIm` reprodujo exactamente el ciclo documentado: −12.000 y −4.000 en los lotes 7 y 8, media −8.000 y dispersión de CV 1.605,95. Pasaron las 31 pruebas.
+
+También se comprobó que los flujos cargan `.env` con `set -a; . .env` bajo `set -e`. Un valor con espacios sin comillas, como una ruta de Docker Desktop dentro de «Proyecto Data Science», rompe esa carga. `.env.example` ahora indica que esos valores van entre comillas dobles; Compose las retira al leer el archivo.
+
+### Construcción de RAW a OBT en una base nueva
+
+Para no tocar `PSET2`, se creó desde ACCOUNTADMIN la base vacía `PSET2_VERIF` con los esquemas RAW, BRONZE, SILVER, GOLD y OBT y los mismos permisos de `docs/snowflake_setup.sql` para `PSET2_ROLE`. El `.env` del clon apuntó `SNOWFLAKE_DATABASE` a esa base solo durante esta prueba. La imagen de ingesta se construyó desde el clon (`Dockerfile.ingesta`) y, como `kestra/ingesta.yml` fija `ai4i-runner:1`, se importó una copia del flujo que solo cambia esa imagen para no reutilizar una compilada antes.
+
+- La ejecución de Kestra `99H6JjyhD01y2Obgen4gX` de `pset2.ai4i_pipeline` terminó en SUCCESS. Descargó el snapshot de UCI en el primer intento y cargó 10.000 filas en `RAW.AI4I` con SHA-256 `dc6630cd…a8e`, igual al CSV local de PSET-02.
+- `dbt build` pasó 20 de 20 (modelos y pruebas, incluidas `conservation`, `physical_contract` y `quarantine_empty`).
+- Spark 3.5.3 construyó `OBT.OBT_READINGS` y validó el join: 10.000 filas de hecho, 10.000 en la OBT y 10.000 identificadores únicos.
+- Conteos en `PSET2_VERIF`: RAW 10.000, Bronze 10.000, Silver 10.000 con cuarentena vacía, `FCT_READING` 10.000, `DIM_PRODUCT_TYPE` 3 y OBT 10.000.
+- El hash canónico de la OBT reconstruida (`src.datos.canonical_hash`) es `dbdb2601fec1714c56141c3b24833f6fb671342cadb68d516238a58cbb9f9e1e`, el mismo de `PSET2.OBT.OBT_READINGS` y de `docs/split.json` (Query ID `01c8a66d-0001-e0ae-0001-77be0026f172`). Es decir, la cadena desde la fuente reproduce exactamente los datos con que se entrenó el modelo.
+
+`PSET2_VERIF` puede eliminarse con `DROP DATABASE PSET2_VERIF;` desde ACCOUNTADMIN.

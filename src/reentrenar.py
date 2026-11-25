@@ -44,6 +44,10 @@ def run():
                                   if row.get("origen") == "replay_pset4")
         if len(simulation) != len(holdout) or not simulation.dataset_sha256.eq(provenance["dataset_sha256"]).all():
             raise ValueError("El replay de Snowflake no corresponde a la partición del modelo")
+        # Snowflake devuelve las filas ordenadas por ID_PREDICCION (UUID). El orden de las
+        # filas cambia los pliegues de la CV, así que se restituye el orden del replay.
+        from monitoreo.replay import ordenar_simulacion
+        simulation = ordenar_simulacion(simulation, holdout)
     else:
         train, holdout, provenance = split()
         simulation = pd.read_csv("docs/predicciones.csv")

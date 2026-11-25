@@ -98,3 +98,16 @@ def test_no_promueve_candidato_que_no_califica(ciclo, tmp_path):
 def test_version_distinta_al_ciclo(ciclo, tmp_path):
     with pytest.raises(SystemExit):
         promover.decidir("promover", "2", "Ana", "", Registro(), ciclo(True), tmp_path / "a.json")
+
+
+def test_reentrenamiento_restituye_el_orden_del_replay():
+    # Snowflake devuelve OBT.PREDICCIONES ordenada por UUID. Sin reordenar, la CV del
+    # reentrenamiento usa otros pliegues y el candidato difiere del backend local.
+    import pandas as pd
+    from monitoreo.replay import orden_replay, ordenar_simulacion
+
+    holdout = pd.DataFrame({"reading_id": range(1000, 1400)}).sample(frac=1, random_state=7)
+    registro = orden_replay(holdout)[["reading_id"]].assign(id_prediccion=lambda d: d.reading_id * 7919 % 401)
+    leido = registro.sort_values("id_prediccion")
+    assert leido.reading_id.tolist() != registro.reading_id.tolist()
+    assert ordenar_simulacion(leido, holdout).reading_id.tolist() == registro.reading_id.tolist()
