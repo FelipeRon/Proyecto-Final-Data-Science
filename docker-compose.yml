@@ -15,6 +15,9 @@ x-app: &app
 services:
   api:
     <<: *app
+    # Imagen publicada por cd.yml en cada merge a main. API_IMAGE fija un commit
+    # (ghcr.io/...:<sha>) o, con ai4i-pset4:local, usa la imagen construida en local.
+    image: ${API_IMAGE:-ghcr.io/feliperon/proyecto-final-data-science:latest}
     depends_on:
       mlflow:
         condition: service_healthy

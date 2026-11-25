@@ -3,27 +3,51 @@ from types import SimpleNamespace
 
 import pytest
 
-from monitoreo.disparo import evaluar
+from monitoreo.alertas import debe_reentrenar, evaluar, resumen
 from src import promover
 
 
-ESTADO = {"ultimo_lote": {"periodo": 8, "psi_max": .06, "query_id": "q1"},
-          "alertas": [{"periodo": 6, "variable": "torque_nm", "psi": 2.633, "query_id": "q1"}]}
+def lote(periodo, psi=.05, caida=False, ap=.95, tasa=.05, costo=90000., regla=190000.):
+    return dict(periodo=periodo, psi_max=psi, caida_ap=caida, ap=ap, alert_rate=tasa,
+                cost_per_1000=costo, costo_regla=regla, query_id="q1")
 
 
-def test_alerta_supera_umbral():
-    resultado = evaluar(ESTADO, .25)
-    assert resultado["supera_umbral"] and resultado["periodo"] == 6
-    assert resultado["variable"] == "torque_nm" and resultado["firma"] == "q1/6/torque_nm"
+CONTROLES = [lote(n) for n in range(1, 9)]
 
 
-def test_controles_no_disparan():
-    resultado = evaluar({"ultimo_lote": ESTADO["ultimo_lote"], "alertas": []}, .25)
-    assert not resultado["supera_umbral"] and resultado["psi_max"] == pytest.approx(.06)
+def test_controles_no_alertan_ni_reentrenan():
+    assert evaluar(CONTROLES) == [] and debe_reentrenar(CONTROLES) is None
+
+
+def test_deriva_con_impacto_reentrena():
+    lotes = CONTROLES[:5] + [lote(6, psi=2.63, caida=True, ap=.67, tasa=.62)] + CONTROLES[6:]
+    motivo = debe_reentrenar(lotes)
+    assert motivo["periodo"] == 6 and motivo["tipo"] == "deriva de datos con impacto"
+    assert {e["regla"] for e in evaluar(lotes)} == {"psi", "caida_ap", "tasa_inspeccion"}
+    assert resumen({"lotes": lotes})["firma"] == "q1/6/deriva de datos con impacto"
+
+
+def test_deriva_sin_caida_no_reentrena():
+    # Sección 7.1: la deriva de datos sin caída de desempeño no dispara el reentrenamiento.
+    lotes = CONTROLES[:5] + [lote(6, psi=2.63)] + CONTROLES[6:]
+    assert [e["regla"] for e in evaluar(lotes)] == ["psi"]
+    assert debe_reentrenar(lotes) is None
+
+
+def test_caida_aislada_alerta_pero_dos_seguidas_reentrenan():
+    una = CONTROLES[:7] + [lote(8, caida=True, ap=.70)]
+    assert debe_reentrenar(una) is None and evaluar(una)[0]["regla"] == "caida_ap"
+    dos = CONTROLES[:6] + [lote(7, caida="true", ap=.75), lote(8, caida=True, ap=.70)]
+    assert debe_reentrenar(dos)["tipo"] == "caída de AP en 2 lotes seguidos"
+
+
+def test_costo_sobre_la_regla_en_dos_lotes_alerta():
+    lotes = [lote(1, costo=200000.), lote(2, costo=210000.)]
+    assert [e["regla"] for e in evaluar(lotes)] == ["costo"]
 
 
 def test_sin_datos_no_dispara():
-    assert evaluar({"ultimo_lote": None, "alertas": []})["supera_umbral"] is False
+    assert resumen({"ultimo_lote": None, "alertas": []})["reentrenar"] is False
 
 
 class Registro:

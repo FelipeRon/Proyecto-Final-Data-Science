@@ -16,8 +16,9 @@ jobs:
         run: |
           image="ghcr.io/${GITHUB_REPOSITORY,,}"
           printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          docker build -t "$image:$GITHUB_SHA" .
+          docker build -t "$image:$GITHUB_SHA" -t "$image:latest" .
           docker push "$image:$GITHUB_SHA"
+          docker push "$image:latest"
   test:
     runs-on: ubuntu-latest
     steps:

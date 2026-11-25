@@ -66,7 +66,9 @@ def monitoring():
         LOG.exception("No se pudo consultar Snowflake")
         raise HTTPException(503, "Monitoreo no disponible") from exc
     latest = data["monitoreo"][-1] if data["monitoreo"] else None
-    return {"ultimo_lote":latest, "alertas":data["alertas"]}
+    # "lotes" permite a monitoreo.alertas aplicar las reglas que miran lotes consecutivos.
+    lotes = [{k: v for k, v in row.items() if k != "detalle"} for row in data["monitoreo"]]
+    return {"ultimo_lote":latest, "alertas":data["alertas"], "lotes":lotes}
 
 
 def record(event):

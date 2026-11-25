@@ -35,3 +35,14 @@ El 25 de noviembre de 2026 se repitió la comprobación sobre `fd3565acacd7b9c0e
 - **CI/CD.** El [CI](https://github.com/FelipeRon/Proyecto-Final-Data-Science/actions/runs/45636156411) y el [CD](https://github.com/FelipeRon/Proyecto-Final-Data-Science/actions/runs/45636156431) de `fd3565a` pasaron. El CD publicó la imagen en GHCR.
 
 Sin credenciales no se ejecutaron el replay contra `PSET2.OBT.OBT_READINGS`, la escritura en las tablas operativas, el notebook 07, la ingesta RAW→OBT ni el reentrenamiento. Tampoco se construyó la imagen de Spark. Solo las dependencias directas están fijadas en `requirements.txt`, y las transitivas se resuelven al construir. En esta ronda, por ejemplo, Pydantic se resolvió a 2.14 y emitió avisos de deprecación sin afectar las pruebas.
+
+## Tercera verificación: alertas, challenger y aprobación
+
+Sobre el snapshot de MLflow actualizado (alias `challenger` en la versión 3 y tag `fase=reentrenamiento` en su run), restaurado en un MLflow local:
+
+- `src.experimentos verify` devolvió `reproduced: True` con AP 0,9098503380639453; `champion` = 1 y `challenger` = 3.
+- `monitoreo.alertas` sobre `docs/monitoreo.csv` generó alertas en el lote 6 (PSI, AP y tasa de inspección) y en el lote 8 (AP), y pidió reentrenar solo por el lote 6 (deriva con impacto). Quitando la caída de AP del lote 6, no pidió reentrenar.
+- `src.reentrenar` con `PSET4_BACKEND=local` archivó el ciclo previo en `docs/historial_reentrenamiento/v3.json`, registró la versión 4 como `challenger` con `fase=reentrenamiento` y el motivo, y obtuvo las mismas cifras del ciclo documentado (−USD 12.000 y −USD 4.000 en los lotes 7 y 8; no califica).
+- `src.promover --decision rechazar` dejó `champion` en 1 y etiquetó la versión; `--decision promover` fue bloqueado por la regla de promoción.
+
+Esta ronda no usó Kestra ni Snowflake: el ciclo se ejecutó con los mismos módulos que llaman los flujos. Las salidas de la versión 4 quedaron solo en ese registro de prueba.

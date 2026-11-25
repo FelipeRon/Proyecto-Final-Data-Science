@@ -1,5 +1,13 @@
 id: monitoreo
 namespace: pset4
+description: >-
+  Se ejecuta al terminar cada replay (subflujo de produccion_lotes). Lee las métricas
+  de OBT.MONITOREO por GET /monitoreo, aplica el catálogo de monitoreo/alertas.py,
+  registra cada alerta como WARN en el log de Kestra y, si hay deriva con impacto o
+  caída sostenida de AP, lanza el reentrenamiento. La deriva sin caída no reentrena.
+concurrency:
+  limit: 1
+  behavior: QUEUE
 tasks:
   - id: alertas
     type: io.kestra.plugin.scripts.shell.Commands
@@ -7,9 +15,47 @@ tasks:
     taskRunner:
       type: io.kestra.plugin.scripts.runner.docker.Docker
       pullPolicy: NEVER
-      volumes:
-        - "{{ envs.pset4_project_dir }}:/app"
+    env:
+      PSET4_API_URI: "{{ envs.pset4_api_uri }}"
     commands:
-      - >-
-        python -c 'import json, urllib.request;
-        print(json.load(urllib.request.urlopen("{{ envs.pset4_api_uri }}/monitoreo", timeout=30)))'
+      - python -m monitoreo.alertas
+  - id: registrar_alertas
+    type: io.kestra.plugin.core.flow.If
+    condition: "{{ outputs.alertas.vars.alertas > 0 }}"
+    then:
+      - id: alerta
+        type: io.kestra.plugin.core.log.Log
+        level: WARN
+        message: >-
+          {{ outputs.alertas.vars.alertas }} alertas de monitoreo:
+          {{ outputs.alertas.vars.detalle }}. PSI máximo {{ outputs.alertas.vars.psi_max }}.
+    else:
+      - id: sin_alertas
+        type: io.kestra.plugin.core.log.Log
+        message: "Sin alertas en {{ outputs.alertas.vars.lotes }} lotes."
+  - id: decidir_reentrenamiento
+    type: io.kestra.plugin.core.flow.If
+    condition: >-
+      {{ outputs.alertas.vars.reentrenar and
+      outputs.alertas.vars.firma != kv('pset4_ultimo_disparo', errorOnMissing=false) }}
+    then:
+      - id: lanzar_reentrenamiento
+        type: io.kestra.plugin.core.flow.Subflow
+        namespace: pset4
+        flowId: reentrenamiento
+        wait: false
+        inputs:
+          disparador: >-
+            {{ outputs.alertas.vars.motivo }} en el lote {{ outputs.alertas.vars.periodo }}
+            (PSI máximo {{ outputs.alertas.vars.psi_max | numberFormat('0.0000') }})
+          psi_max: "{{ outputs.alertas.vars.psi_max }}"
+      - id: recordar_disparo
+        type: io.kestra.plugin.core.kv.Set
+        key: pset4_ultimo_disparo
+        value: "{{ outputs.alertas.vars.firma }}"
+    else:
+      - id: sin_reentrenamiento
+        type: io.kestra.plugin.core.log.Log
+        message: >-
+          Sin reentrenamiento: {{ outputs.alertas.vars.reentrenar ? 'el evento ya se procesó'
+          : 'no hay caída de desempeño que lo justifique' }}.

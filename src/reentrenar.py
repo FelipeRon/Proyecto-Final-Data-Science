@@ -16,10 +16,26 @@ from src.metricas import choose_threshold, evaluate
 from src.pipeline import DecisionModel
 
 
+CHALLENGER = "challenger"
+FILTRO = "tags.fase = 'reentrenamiento'"
+
+
+def export_retraining_runs(path="docs/reentrenamientos.csv"):
+    """Exporta con mlflow.search_runs las corridas con fase=reentrenamiento."""
+    rows = mlflow.search_runs(search_all_experiments=True, filter_string=FILTRO, max_results=1000)
+    rows.drop(columns=["artifact_uri"], errors="ignore").to_csv(path, index=False)
+    return rows
+
+
 def run():
     output = Path("docs/reentrenamiento.json")
     if output.exists():
-        raise SystemExit("El ciclo ya está registrado. Use un workspace nuevo para repetir.")
+        # Conserva la evidencia del ciclo anterior antes de registrar uno nuevo.
+        previo = json.loads(output.read_text(encoding="utf-8"))
+        archivo = Path("docs/historial_reentrenamiento") / f'v{previo["version"]}.json'
+        archivo.parent.mkdir(exist_ok=True)
+        if not archivo.exists():
+            archivo.write_text(output.read_text(encoding="utf-8"), encoding="utf-8")
     if os.getenv("PSET4_BACKEND","local") == "snowflake":
         from monitoreo.snowflake_store import read_partition, read_rows
         spec = json.loads(Path("docs/split.json").read_text(encoding="utf-8"))
@@ -31,6 +47,7 @@ def run():
     else:
         train, holdout, provenance = split()
         simulation = pd.read_csv("docs/predicciones.csv")
+    motivo = os.getenv("PSET4_DISPARADOR", "calendario al madurar 6 lotes")
     selection = json.loads(Path("docs/seleccion.json").read_text(encoding="utf-8"))
     name = selection["model_name"]
     version = selection["models"][0]["version"]
@@ -57,8 +74,7 @@ def run():
     eligible = bool(paired.mean() > cv_std and all(row["candidato"]["alert_rate"] <= .12 for row in windows))
     mlflow.set_experiment("ai4i-mantenimiento-pset4")
     with mlflow.start_run(run_name="reentrenamiento_lote_6") as mlrun:
-        mlflow.set_tag("phase", "reentrenamiento")
-        mlflow.set_tag("disparador", os.getenv("PSET4_DISPARADOR", "calendario al madurar 6 lotes"))
+        mlflow.set_tags({"fase": "reentrenamiento", "phase": "reentrenamiento", "disparador": motivo})
         mlflow.log_params({"snapshot": provenance["dataset_sha256"], "ultimo_lote": 6,
                            "version_base": version, "filas_entrenamiento": len(history)})
         mlflow.log_metrics({"mejora_coste_1000": paired.mean(), "dispersion_cv_costo": cv_std})
@@ -67,15 +83,14 @@ def run():
                     code_paths=["src"])
         registered = mlflow.register_model(model.model_uri, name)
         client = mlflow.MlflowClient()
-        client.set_registered_model_alias(name, "candidato_pset4", registered.version)
+        client.set_registered_model_alias(name, CHALLENGER, registered.version)
         result = {"run_id": mlrun.info.run_id, "version": registered.version,
-                  "disparador": os.getenv("PSET4_DISPARADOR", "calendario al madurar 6 lotes"), "filas_entrenamiento": len(history),
+                  "disparador": motivo, "filas_entrenamiento": len(history),
                   "champion_version": version, "mejora_media_costo": float(paired.mean()),
                   "dispersion_cv_costo": cv_std, "califica": eligible, "promovido": False,
                   "evaluacion": windows}
     dump(output, result)
-    pd.DataFrame([{k: v for k, v in result.items() if k != "evaluacion"}]).to_csv(
-        "docs/reentrenamientos.csv", index=False)
+    export_retraining_runs()
     print(json.dumps(result, ensure_ascii=False))
     resumen = {k: result[k] for k in ("run_id", "version", "champion_version", "califica",
                                        "mejora_media_costo", "dispersion_cv_costo")}
