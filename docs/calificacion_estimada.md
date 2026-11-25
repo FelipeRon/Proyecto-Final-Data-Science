@@ -1,22 +1,29 @@
 # Calificación estimada del PSet 4 (sin video)
 
-Estimación propia del puntaje según la rúbrica de `CD-PSet-4.pdf`, revisando el repositorio en la rama `claude/project-thread-ldgtzl` (25-nov-2026). Se asume que **no se entrega el video de demostración**. El video no tiene un peso propio en la rúbrica, pero es la evidencia que el enunciado pide para la infraestructura local (Compose, ingesta, 422, rollback, alerta, aprobación del reentrenamiento e interruptor). Sin él, cada criterio que dependía de esa demostración se apoya solo en texto, y se descontó en el criterio correspondiente.
+Estimación propia del puntaje según la rúbrica de `CD-PSet-4.pdf`, revisando el repositorio. Segunda evaluación: commit `aea76a4` de `main` (25-nov-2026, CI y CD en verde). La primera evaluación, sobre `aa687e8`, dio 75,5. Se asume que **no se entrega el video de demostración**. El video no tiene un peso propio en la rúbrica, pero es la evidencia que el enunciado pide para la infraestructura local (Compose, ingesta, 422, rollback, alerta, aprobación del reentrenamiento e interruptor). Sin él, cada criterio que dependía de esa demostración se apoya solo en texto, y se descontó en el criterio correspondiente.
 
 ## Resultado
 
 | Criterio | Peso | Cumplimiento | Puntos |
 |---|---:|---:|---:|
 | Patrón de despliegue y servicio de predicción | 15 | 87 % | 13,0 |
-| Pruebas automáticas y CI/CD | 10 | 70 % | 7,0 |
-| Reentrenamiento, promoción y rollback | 10 | 55 % | 5,5 |
+| Pruebas automáticas y CI/CD | 10 | 70 % | 7,0 (=) |
+| Reentrenamiento, promoción y rollback | 10 | 70 % | 7,0 (+1,5) |
 | Simulación de producción y métricas de monitoreo | 10 | 75 % | 7,5 |
-| Deriva de datos, deriva conceptual y alertas | 10 | 70 % | 7,0 |
+| Deriva de datos, deriva conceptual y alertas | 10 | 75 % | 7,5 (+0,5) |
 | Ética operativa, criterios de retirada y respaldo | 10 | 80 % | 8,0 |
 | Resultado de negocio y presentación ejecutiva | 15 | 90 % | 13,5 |
-| Integración end-to-end, correcciones, reproducibilidad y documento técnico | 20 | 70 % | 14,0 |
-| **Total** | **100** | | **≈ 75,5 / 100** |
+| Integración end-to-end, correcciones, reproducibilidad y documento técnico | 20 | 75 % | 15,0 (+1,0) |
+| **Total** | **100** | | **≈ 78,5 / 100** |
 
-Rango razonable: **72 a 80**, según lo estricto que sea el corrector con la falta del video y con los flujos de Kestra incompletos.
+Rango razonable: **75 a 82**, según lo estricto que sea el corrector con la falta del video y con que el ciclo de Kestra no tenga evidencia de ejecución.
+
+## Qué cambió desde la primera evaluación
+
+- `kestra/disparo_deriva.yml` (nuevo) se dispara al terminar `monitoreo`, lee el PSI y lanza `reentrenamiento` sin repetir el mismo evento.
+- `kestra/reentrenamiento.yml` ahora pausa con aprobar o rechazar, responsable y comentario, mueve `champion` con `src/promover.py` y verifica `GET /modelo`. El motivo del disparo queda como tag en MLflow.
+- `tests/test_disparo.py` agrega 7 pruebas (23 en total, en verde en CI).
+- `docs/ablacion.json` y `docs/plan_tuning.json` permiten correr los notebooks 03 y 04 desde un clon limpio, y `docs/verificacion_reproducibilidad.md` documenta la segunda verificación.
 
 ## Detalle por criterio
 
@@ -55,9 +62,10 @@ Cumple:
 - Rollback 1 → 2 → 1 verificado en `docs/verificacion_reproducibilidad.md`.
 
 Descuentos:
-- `kestra/reentrenamiento.yml` **no tiene disparador** (ni por alerta ni por calendario) y la pausa es un `Pause` de 24 h sin rama de aprobar/rechazar ni tarea que mueva el alias `champion`. *Actualización:* `kestra/disparo_deriva.yml` y `kestra/reentrenamiento.yml` ya agregan el disparo por PSI, la aprobación con promover/rechazar y la tarea que mueve `champion` (`src/promover.py`); falta ejecutarlo contra Snowflake y el MLflow restaurado.
-- El alias del candidato es `candidato_pset4`, no `challenger`; el tag es `phase`, no `fase=reentrenamiento`, y el motivo del disparo no se registra como tag en MLflow.
-- El disparador real es por calendario aunque el enunciado prioriza la alerta de la sección 6.3.
+- *Resuelto en `aea76a4`:* disparador, pausa con promover o rechazar y tarea que mueve `champion`. Pero el ciclo **no se ha ejecutado** en Kestra contra Snowflake, así que no hay evidencia de alerta, pausa, decisión y cambio de modelo.
+- **El disparo es solo por PSI**, y el enunciado (7.1) dice que la deriva de datos sin caída de desempeño no dispara el reentrenamiento. Debería exigir además la caída de AP o costo durante N lotes (`caida_ap` ya está en `MONITOREO`), o bien declarar el ciclo como disparo por calendario.
+- Con `docs/reentrenamiento.json` en el repo, `src.reentrenar` se niega a correr, por lo que el flujo disparado falla en este checkout sin una carpeta de trabajo limpia.
+- El alias del candidato sigue siendo `candidato_pset4`, no `challenger`, y el tag sigue siendo `phase`, no `fase=reentrenamiento`. El motivo ya se registra como tag `disparador`.
 - Sin video ni capturas del rollback y de la pausa de aprobación; la evidencia es solo textual.
 
 ### 4. Simulación de producción y métricas de monitoreo (7,5 / 10)
@@ -81,7 +89,7 @@ Cumple:
 - Tablero Streamlit con métricas de sistema, modelo y deriva por lote.
 
 Descuentos:
-- `kestra/monitoreo.yml` solo consulta `GET /monitoreo` e imprime el JSON. No calcula métricas, no escribe `MONITOREO` ni emite una alerta explícita en el log.
+- `kestra/monitoreo.yml` solo consulta `GET /monitoreo` e imprime el JSON. No calcula métricas ni escribe `MONITOREO`. Mejora parcial: `disparo_deriva.yml` deja en el log de Kestra si hubo o no disparo, aunque no como una alerta WARN o ERROR.
 - La tabla de diagnóstico (entradas/desempeño/acción) y la plantilla de alertas (métrica, umbral, ventana, severidad, quién, acción) aparecen en prosa, no como tablas. Hay una sola alerta definida (PSI).
 - El tablero no marca los reentrenamientos y muestra las alertas solo como tabla aparte. Falta `monitoreo/alertas.py`, que pide la estructura.
 
@@ -122,13 +130,14 @@ Descuentos:
 - **Sin enlace al video en el documento técnico** (requisito explícito).
 - El código está en la raíz del repo y no en `proyecto_final/`. Faltan `docs/arquitectura.png`, `docs/modelo_dimensional.png`, `monitoreo/alertas.py` y `tests/test_comportamiento.py`.
 - `corridas.csv` no incluye la corrida de reentrenamiento (`17a1183d…`), y `reentrenamientos.csv` no sale de `mlflow.search_runs` filtrando `fase='reentrenamiento'`.
+- *Mejora:* los notebooks 01 a 06 corren desde un clon limpio y hay una segunda verificación documentada con CI y CD en verde en `aea76a4`.
 - La prueba RAW → OBT en una cuenta nueva no se ejecutó; Compose no levanta todo con un solo comando (requiere restaurar MLflow antes).
 - El memo tiene información desactualizada (GHCR "pendiente") y los anexos (memos anteriores y `cambios.md`) van como archivos sueltos, no dentro del documento.
 
 ## Qué subiría más la nota con poco esfuerzo
 
 1. Agregar `tests/test_comportamiento.py` con 2 pruebas de monotonía sobre el fixture del champion (desgaste y torque) y una prueba de "el modelo no carga → respaldo". Aproximadamente +2 puntos.
-2. Completar `kestra/reentrenamiento.yml`: disparador (Flow trigger desde `monitoreo` o Schedule), `Pause` con aprobar/rechazar y una tarea que mueva `champion`; renombrar alias a `challenger` y tag a `fase`. Aproximadamente +2 a +3 puntos.
+2. Condicionar `disparo_deriva.yml` a la caída de desempeño (`caida_ap` o costo en 2 lotes), renombrar el alias a `challenger` y el tag a `fase`, y ejecutar una vez el ciclo en Kestra con captura de la pausa y de `/modelo`. Aproximadamente +1,5 a +2 puntos.
 3. Que `kestra/monitoreo.yml` emita un `Log` de nivel WARN/ERROR cuando haya alerta. Aproximadamente +1 punto.
 4. Actualizar el memo: captura de Actions en verde, GHCR publicado y tablas de alertas y diagnóstico. Aproximadamente +1 a +2 puntos.
 5. Exportar `docs/arquitectura.png` y `docs/modelo_dimensional.png`, y regenerar `corridas.csv` con la corrida de reentrenamiento. Aproximadamente +1 punto.
