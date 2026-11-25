@@ -8,7 +8,7 @@ Evaluación técnica orientativa basada en la rúbrica del 4 de noviembre de 202
 | Servicio y pruebas | 4/4 con CI verde | Imagen construida y levantada con Compose. Predicción registrada en Snowflake y respuesta HTTP 422 al omitir torque. Pipeline compartido, dependencias principales fijadas y 16 pruebas en Docker. El workflow CI debe estar en verde para el commit evaluado. |
 | Registro y versionado | 4/4 | La API resolvió el alias champion, v1, run d07d9f7f061848138579716948af2c6f de PSET-03. `despliegue.md` documenta promoción y reversión. |
 | Monitoreo y deriva | 4/4 | Replay directo de Snowflake y verificación del tablero. El notebook ejecutado separa desplazamiento de torque de un cambio inducido de la relación entrada/etiqueta. GET /monitoreo expone la alerta operativa. |
-| Comunicación y retirada | 4/4 | Dos versiones de la diapositiva de resultados y `criterio_retirada.md`, con condiciones medibles de capacidad, costo y trazabilidad. |
+| Comunicación y retirada | 4/4 | Memo técnico, presentación ejecutiva y `criterio_retirada.md`, con condiciones medibles de capacidad, costo y trazabilidad. |
 
 ## Evidencia de ejecución
 

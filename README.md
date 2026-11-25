@@ -68,7 +68,7 @@ Esta entrega conserva el snapshot Snowflake y el modelo de referencia identifica
 
 ## Evidencia de evaluación
 
-Consulta [la auditoría de la rúbrica](docs/auditoria_rubrica.md), [el diseño de despliegue](docs/despliegue.md), [el criterio de retirada](docs/criterio_retirada.md) y [el notebook de monitoreo con sus salidas](monitoreo/01_deriva.ipynb). El registro vivo se verifica con `Invoke-RestMethod http://127.0.0.1:8004/monitoreo`.
+Consulta [la auditoría de la rúbrica](docs/auditoria_rubrica.md), [el diseño de despliegue](docs/despliegue.md), [el criterio de retirada](docs/criterio_retirada.md) y [el notebook de monitoreo con sus salidas](notebooks/07_analisis_monitoreo.ipynb). El registro vivo se verifica con `Invoke-RestMethod http://127.0.0.1:8004/monitoreo`.
 
 ## Infraestructura integrada y entregables
 
@@ -95,7 +95,6 @@ Para una ejecución desde la fuente, construye `docker compose build spark`, imp
 
 - [Memo técnico](docs/PSet4_memo_Ron_Andrade.pdf)
 - [Presentación ejecutiva](docs/PSet4_presentacion_Ron_Andrade.pdf)
-- [Resultados para dos audiencias](docs/PSet4_resultados_dos_audiencias.pdf)
 - [Historial de los PSets](docs/historial/)
 - [Auditoría de la rúbrica](docs/auditoria_rubrica.md)
 
