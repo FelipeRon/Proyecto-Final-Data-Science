@@ -72,7 +72,7 @@ Consulta [la auditoría de la rúbrica](docs/auditoria_rubrica.md), [el diseño 
 
 ## Infraestructura integrada y entregables
 
-`docker-compose.yml` reúne PostgreSQL, Kestra, MLflow, FastAPI y Streamlit. Spark se ejecuta como trabajo bajo demanda: `docker compose run --rm spark`.
+`docker-compose.yml` reúne PostgreSQL, Kestra, MLflow, FastAPI y Streamlit. La API usa la imagen que `cd.yml` publica en GHCR en cada merge a main (`API_IMAGE` en `.env` permite fijar un commit o usar la imagen local). Spark se ejecuta como trabajo bajo demanda: `docker compose run --rm spark`.
 
 En un checkout limpio, completa las variables privadas de `.env`, incluidos los accesos de Kestra. Mantén `MLFLOW_TRACKING_URI=http://mlflow:5000` para usar el registro de este Compose. Restaura el registro antes del primer arranque de MLflow. Ejecuta el bloque siguiente una sola vez por carpeta de trabajo.
 
@@ -81,6 +81,7 @@ New-Item -ItemType Directory -Force data | Out-Null
 docker compose config --quiet
 docker compose build runner
 docker compose run --rm --no-deps -v "${PWD}/data:/app/data" runner python -m src.portable restore
+docker compose pull api
 docker compose up -d --no-build mlflow kestra api tablero
 ```
 
@@ -91,7 +92,7 @@ docker compose run --rm --no-deps runner
 Invoke-RestMethod http://127.0.0.1:8004/monitoreo
 ```
 
-Para una ejecución desde la fuente, construye `docker compose build spark`, importa los YAML de `kestra/` y ejecuta la ingesta antes del replay. El cron de ingesta se entrega deshabilitado para que su ejecución sea explícita. Para comprobar la conexión sin escribir datos, ejecuta `docker compose run --rm spark dbt debug --project-dir /app/dbt --profiles-dir /app/dbt`. En Docker Desktop usa para `HOST_PROJECT_DIR` y `KESTRA_SECRETS_DIR` las rutas absolutas visibles para el motor Linux. Kestra está en [8080](http://127.0.0.1:8080) y MLflow en [5003](http://127.0.0.1:5003). En otro equipo esos puertos deben estar libres. Importa primero `kestra/monitoreo.yml` y después `kestra/produccion_lotes.yml` para ejecutar el replay orquestado. Importa también `kestra/reentrenamiento.yml` y `kestra/disparo_deriva.yml` para que un PSI por encima de 0,25 lance el reentrenamiento y quede en pausa hasta la aprobación manual. `src.reentrenar` se niega a correr si existe `docs/reentrenamiento.json`, así que el ciclo disparado requiere una carpeta de trabajo sin ese registro. Los runners de Kestra usan `KESTRA_MLFLOW_URI` y `KESTRA_PREDICTION_URI` para acceder a los puertos del host y `KESTRA_RUNNER_IMAGE` para el tag de la imagen de PSET-04.
+Para una ejecución desde la fuente, construye `docker compose build spark`, importa los YAML de `kestra/` y ejecuta la ingesta antes del replay. El cron de ingesta se entrega deshabilitado para que su ejecución sea explícita. Para comprobar la conexión sin escribir datos, ejecuta `docker compose run --rm spark dbt debug --project-dir /app/dbt --profiles-dir /app/dbt`. En Docker Desktop usa para `HOST_PROJECT_DIR` y `KESTRA_SECRETS_DIR` las rutas absolutas visibles para el motor Linux. Kestra está en [8080](http://127.0.0.1:8080) y MLflow en [5003](http://127.0.0.1:5003). En otro equipo esos puertos deben estar libres. Importa primero `kestra/monitoreo.yml` y después `kestra/produccion_lotes.yml` para ejecutar el replay orquestado. Importa también `kestra/reentrenamiento.yml`. Al terminar cada replay, `monitoreo` aplica el catálogo de `monitoreo/alertas.py`, registra cada alerta como WARN en el log de Kestra y lanza el reentrenamiento solo si hay deriva con impacto (PSI > 0,25 y caída de AP en el mismo lote) o caída de AP en dos lotes seguidos. La deriva sin caída de desempeño no reentrena. El reentrenamiento registra el candidato con el alias `challenger` y el tag `fase=reentrenamiento`, queda en pausa hasta la aprobación manual y, si se aprueba, mueve `champion`. Si ya existe `docs/reentrenamiento.json`, se archiva en `docs/historial_reentrenamiento/` antes del nuevo ciclo. Los runners de Kestra usan `KESTRA_MLFLOW_URI` y `KESTRA_PREDICTION_URI` para acceder a los puertos del host y `KESTRA_RUNNER_IMAGE` para el tag de la imagen de PSET-04.
 
 - [Memo técnico](docs/PSet4_memo_Ron_Andrade.pdf)
 - [Presentación ejecutiva](docs/PSet4_presentacion_Ron_Andrade.pdf)
