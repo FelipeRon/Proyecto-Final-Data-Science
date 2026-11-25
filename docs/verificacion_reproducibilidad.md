@@ -64,3 +64,15 @@ Con Snowflake, el primer reentrenamiento obtuvo una mejora media de −USD 12.00
 La rama `fix/orden-reentrenamiento-snowflake` reordena las predicciones leídas de Snowflake con el mismo orden del replay (`monitoreo.replay.orden_replay`) y añade una prueba. Con el arreglo, el reentrenamiento orquestado `1HbXsDSW3QCj0NondybdIm` reprodujo exactamente el ciclo documentado: −12.000 y −4.000 en los lotes 7 y 8, media −8.000 y dispersión de CV 1.605,95. Pasaron las 31 pruebas.
 
 También se comprobó que los flujos cargan `.env` con `set -a; . .env` bajo `set -e`. Un valor con espacios sin comillas, como una ruta de Docker Desktop dentro de «Proyecto Data Science», rompe esa carga. `.env.example` ahora indica que esos valores van entre comillas dobles; Compose las retira al leer el archivo.
+
+### Construcción de RAW a OBT en una base nueva
+
+Para no tocar `PSET2`, se creó desde ACCOUNTADMIN la base vacía `PSET2_VERIF` con los esquemas RAW, BRONZE, SILVER, GOLD y OBT y los mismos permisos de `docs/snowflake_setup.sql` para `PSET2_ROLE`. El `.env` del clon apuntó `SNOWFLAKE_DATABASE` a esa base solo durante esta prueba. La imagen de ingesta se construyó desde el clon (`Dockerfile.ingesta`) y, como `kestra/ingesta.yml` fija `ai4i-runner:1`, se importó una copia del flujo que solo cambia esa imagen para no reutilizar una compilada antes.
+
+- La ejecución de Kestra `99H6JjyhD01y2Obgen4gX` de `pset2.ai4i_pipeline` terminó en SUCCESS. Descargó el snapshot de UCI en el primer intento y cargó 10.000 filas en `RAW.AI4I` con SHA-256 `dc6630cd…a8e`, igual al CSV local de PSET-02.
+- `dbt build` pasó 20 de 20 (modelos y pruebas, incluidas `conservation`, `physical_contract` y `quarantine_empty`).
+- Spark 3.5.3 construyó `OBT.OBT_READINGS` y validó el join: 10.000 filas de hecho, 10.000 en la OBT y 10.000 identificadores únicos.
+- Conteos en `PSET2_VERIF`: RAW 10.000, Bronze 10.000, Silver 10.000 con cuarentena vacía, `FCT_READING` 10.000, `DIM_PRODUCT_TYPE` 3 y OBT 10.000.
+- El hash canónico de la OBT reconstruida (`src.datos.canonical_hash`) es `dbdb2601fec1714c56141c3b24833f6fb671342cadb68d516238a58cbb9f9e1e`, el mismo de `PSET2.OBT.OBT_READINGS` y de `docs/split.json` (Query ID `01c8a66d-0001-e0ae-0001-77be0026f172`). Es decir, la cadena desde la fuente reproduce exactamente los datos con que se entrenó el modelo.
+
+`PSET2_VERIF` puede eliminarse con `DROP DATABASE PSET2_VERIF;` desde ACCOUNTADMIN.
