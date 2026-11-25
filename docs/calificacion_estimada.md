@@ -55,7 +55,7 @@ Cumple:
 - Rollback 1 → 2 → 1 verificado en `docs/verificacion_reproducibilidad.md`.
 
 Descuentos:
-- `kestra/reentrenamiento.yml` **no tiene disparador** (ni por alerta ni por calendario) y la pausa es un `Pause` de 24 h sin rama de aprobar/rechazar ni tarea que mueva el alias `champion`.
+- `kestra/reentrenamiento.yml` **no tiene disparador** (ni por alerta ni por calendario) y la pausa es un `Pause` de 24 h sin rama de aprobar/rechazar ni tarea que mueva el alias `champion`. *Actualización:* `kestra/disparo_deriva.yml` y `kestra/reentrenamiento.yml` ya agregan el disparo por PSI, la aprobación con promover/rechazar y la tarea que mueve `champion` (`src/promover.py`); falta ejecutarlo contra Snowflake y el MLflow restaurado.
 - El alias del candidato es `candidato_pset4`, no `challenger`; el tag es `phase`, no `fase=reentrenamiento`, y el motivo del disparo no se registra como tag en MLflow.
 - El disparador real es por calendario aunque el enunciado prioriza la alerta de la sección 6.3.
 - Sin video ni capturas del rollback y de la pausa de aprobación; la evidencia es solo textual.

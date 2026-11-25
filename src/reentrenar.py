@@ -58,6 +58,7 @@ def run():
     mlflow.set_experiment("ai4i-mantenimiento-pset4")
     with mlflow.start_run(run_name="reentrenamiento_lote_6") as mlrun:
         mlflow.set_tag("phase", "reentrenamiento")
+        mlflow.set_tag("disparador", os.getenv("PSET4_DISPARADOR", "calendario al madurar 6 lotes"))
         mlflow.log_params({"snapshot": provenance["dataset_sha256"], "ultimo_lote": 6,
                            "version_base": version, "filas_entrenamiento": len(history)})
         mlflow.log_metrics({"mejora_coste_1000": paired.mean(), "dispersion_cv_costo": cv_std})
@@ -68,7 +69,7 @@ def run():
         client = mlflow.MlflowClient()
         client.set_registered_model_alias(name, "candidato_pset4", registered.version)
         result = {"run_id": mlrun.info.run_id, "version": registered.version,
-                  "disparador": "calendario al madurar 6 lotes", "filas_entrenamiento": len(history),
+                  "disparador": os.getenv("PSET4_DISPARADOR", "calendario al madurar 6 lotes"), "filas_entrenamiento": len(history),
                   "champion_version": version, "mejora_media_costo": float(paired.mean()),
                   "dispersion_cv_costo": cv_std, "califica": eligible, "promovido": False,
                   "evaluacion": windows}
@@ -76,6 +77,9 @@ def run():
     pd.DataFrame([{k: v for k, v in result.items() if k != "evaluacion"}]).to_csv(
         "docs/reentrenamientos.csv", index=False)
     print(json.dumps(result, ensure_ascii=False))
+    resumen = {k: result[k] for k in ("run_id", "version", "champion_version", "califica",
+                                       "mejora_media_costo", "dispersion_cv_costo")}
+    print("::" + json.dumps({"outputs": resumen}) + "::")
 
 
 if __name__ == "__main__":
