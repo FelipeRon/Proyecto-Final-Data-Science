@@ -2,23 +2,30 @@
 
 Estimación propia del puntaje según la rúbrica de `CD-PSet-4.pdf`. Se asume que **no se entrega el video de demostración**. El video no tiene un peso propio, pero es la evidencia que el enunciado pide para la infraestructura local; sin él, cada criterio que dependía de esa demostración se apoya en texto y se descontó ahí.
 
-Tercera evaluación (25-nov-2026), sobre la rama `claude/project-thread-ldgtzl` después de corregir las brechas. Evaluaciones anteriores: 75,5 (commit `aa687e8`) y 78,5 (commit `aea76a4`).
+Cuarta evaluación (25-nov-2026), sobre `main` después del PR #3 (ciclo de Kestra contra Snowflake, RAW → OBT en una base nueva y arreglo del orden en el reentrenamiento) y del memo actualizado. Evaluaciones anteriores: 75,5 (`aa687e8`), 78,5 (`aea76a4`) y 85,5 (`058db03`).
 
 ## Resultado
 
-| Criterio | Peso | Antes | Ahora |
+| Criterio | Peso | 3.ª eval. | Ahora |
 |---|---:|---:|---:|
-| Patrón de despliegue y servicio de predicción | 15 | 13,0 | 13,5 |
-| Pruebas automáticas y CI/CD | 10 | 7,0 | 9,0 |
-| Reentrenamiento, promoción y rollback | 10 | 7,0 | 8,0 |
+| Patrón de despliegue y servicio de predicción | 15 | 13,5 | 13,5 |
+| Pruebas automáticas y CI/CD | 10 | 9,0 | 9,0 |
+| Reentrenamiento, promoción y rollback | 10 | 8,0 | 9,0 |
 | Simulación de producción y métricas de monitoreo | 10 | 7,5 | 7,5 |
-| Deriva de datos, deriva conceptual y alertas | 10 | 7,5 | 8,5 |
-| Ética operativa, criterios de retirada y respaldo | 10 | 8,0 | 9,0 |
+| Deriva de datos, deriva conceptual y alertas | 10 | 8,5 | 9,0 |
+| Ética operativa, criterios de retirada y respaldo | 10 | 9,0 | 9,0 |
 | Resultado de negocio y presentación ejecutiva | 15 | 13,5 | 13,5 |
-| Integración end-to-end, correcciones, reproducibilidad y documento técnico | 20 | 15,0 | 16,5 |
-| **Total** | **100** | **78,5** | **≈ 85,5** |
+| Integración end-to-end, correcciones, reproducibilidad y documento técnico | 20 | 16,5 | 18,0 |
+| **Total** | **100** | **85,5** | **≈ 88,5** |
 
-Rango razonable: **82 a 88**. Lo que más pesa en contra es que el ciclo de Kestra contra Snowflake no tiene evidencia de ejecución y que falta el video.
+Rango razonable: **86 a 91**. Lo que más pesa en contra es la falta del video.
+
+## Qué cambió desde la tercera evaluación
+
+- **Ciclo en Kestra contra Snowflake** (`docs/verificacion_reproducibilidad.md`, cuarta verificación): replay, WARN de alertas, disparo por deriva con impacto sin duplicados, challenger, pausa, rechazo, bloqueo de la promoción y movimiento de `champion` reflejado en `GET /modelo`.
+- **RAW → OBT en una base nueva**: la reconstrucción desde UCI reprodujo el hash del snapshot de entrenamiento.
+- **Arreglo**: el reentrenamiento con Snowflake restituye el orden del replay y reproduce las cifras documentadas (prueba nueva; 31 en total).
+- **Memo** regenerado con esa evidencia (12 páginas + anexos) y `cd.yml` con disparo manual (`workflow_dispatch`).
 
 ## Qué se corrigió
 
@@ -35,9 +42,9 @@ Rango razonable: **82 a 88**. Lo que más pesa en contra es que el ciclo de Kest
 ## Descuentos que quedan
 
 - **Video** y su enlace en el memo (el memo lo marca como pendiente).
-- **Kestra de punta a punta**: el ciclo alerta → challenger → pausa → decisión se ejecutó con los módulos de Python, no en Kestra contra Snowflake. Una captura de esa ejecución sumaría 1 a 2 puntos.
+- **Capturas**: la evidencia de Kestra son IDs de ejecución y logs descritos; capturas de pantalla (pausa de aprobación, WARN, `/modelo`) la harían más convincente.
 - `kestra/produccion_lotes.yml` corre el replay completo en una tarea, no un ciclo por lote, y `monitoreo.yml` lee las métricas que escribe el replay en vez de calcularlas.
 - Tasas 4xx/5xx no se miden en el replay (se explica en el memo).
 - La "captura" de GitHub Actions es una tabla con enlaces a las ejecuciones; una captura de pantalla real es más convincente.
 - La presentación ejecutiva no cambió: su recomendación (piloto) no dice explícitamente "escalar, ajustar o retirar".
-- El código está en la raíz del repositorio y no dentro de `proyecto_final/`; la prueba RAW → OBT en una cuenta nueva no se ejecutó.
+- El código está en la raíz del repositorio y no dentro de `proyecto_final/`.

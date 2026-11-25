@@ -232,6 +232,10 @@ def build_story():
          "dim_product_type (una fila por tipo L, M, H). Spark une hecho y dimensión y valida que el conteo se "
          "conserve, que reading_id sea único y que no haya huérfanos. La ejecución de PSET-02 registró 10.000 filas "
          "RAW, 20 pasos dbt correctos y 10.000 filas únicas en la OBT; el snapshot tiene 339 fallas."),
+        ("Reconstrucción desde la fuente", "El 25-nov-2026 la ejecución de Kestra 99H6JjyhD01y2Obgen4gX construyó "
+         "todo en una base vacía (PSET2_VERIF): descargó UCI al primer intento, cargó 10.000 filas en RAW, dbt pasó "
+         "20 de 20 y Spark validó el join. El hash canónico de la OBT reconstruida coincide con el del snapshot de "
+         "entrenamiento, así que la cadena desde la fuente reproduce exactamente los datos del modelo."),
         ("Batch frente a streaming", "La ingesta histórica es batch porque la fuente es un archivo estático. En "
          "planta, la telemetría llegaría continua y el patrón batch de 15 minutos seguiría siendo suficiente."),
     ]]
@@ -372,9 +376,20 @@ def build_story():
     ], [20 * mm, 35 * mm, 35 * mm, 30 * mm, 30 * mm]),
         p(f"Challenger versión {cycle['version']}, run {cycle['run_id']}. Mejora media "
           f"{usd(cycle['mejora_media_costo'])} USD frente a un umbral de {usd(cycle['dispersion_cv_costo'])} USD "
-          "(una desviación del costo de CV): no califica, se rechaza y champion sigue en la versión 1. Al repetir "
-          "el ciclo con el código actual sobre el registro restaurado, la nueva versión obtuvo las mismas cifras, "
-          "y promover fue bloqueado por la regla.", "note")])]
+          "(una desviación del costo de CV): no califica, se rechaza y champion sigue en la versión 1.", "note")])]
+    story += [KeepTogether([p(h, "h"), p(b)]) for h, b in [
+        ("Ejecución en Kestra contra Snowflake", "El ciclo se repitió de punta a punta en un Compose aislado con la "
+         "cuenta del proyecto. produccion_lotes (6KqcWW5Oj7kS1Z5kGK6rJf) leyó la OBT y escribió 2.000 predicciones, "
+         "ocho lotes y la alerta de PSI. monitoreo (yux1c9BOTl5vdnZRGaaQs) registró el WARN con cuatro alertas y lanzó "
+         "reentrenamiento por «deriva de datos con impacto en el lote 6»; una segunda ejecución no lo repitió. "
+         "reentrenamiento (1HbXsDSW3QCj0NondybdIm) registró el challenger, reprodujo exactamente las cifras de la "
+         "tabla y quedó en pausa: reanudado con promover, la regla lo bloqueó y champion siguió en 1. Para recorrer la "
+         "rama de promoción, en un registro aislado se forzó califica=true: champion pasó a la nueva versión, "
+         "GET /modelo la reflejó y luego se devolvió a la versión 1 sin reconstruir la imagen."),
+        ("Fallo encontrado", "Snowflake devuelve PREDICCIONES ordenada por UUID y eso cambiaba los pliegues de la CV "
+         "del reentrenamiento (−USD 12.000 en vez de −8.000). Se corrigió restituyendo el orden del replay, con una "
+         "prueba en CI."),
+    ]]
     story.append(PageBreak())
 
     sub = sub.assign(recall=lambda d: (d.fallas - d.fallas_omitidas) / d.fallas,
@@ -435,9 +450,9 @@ def build_story():
         ("Alcance de la evidencia", "El holdout reutilizado permite comparar políticas en el mismo escenario, pero no "
          "es un flujo externo. El cambio de torque es artificial y los costos son supuestos. El replay no mide tasas "
          "HTTP 4xx/5xx porque puntúa en lote."),
-        ("Lo que no se pudo resolver", "La construcción RAW → OBT en una cuenta de Snowflake nueva no se ejecutó. El "
-         "ciclo alerta → reentrenamiento → aprobación se ejecutó con los módulos de Python sobre el registro "
-         "restaurado, pero no de punta a punta en Kestra contra Snowflake."),
+        ("Lo que no se pudo resolver", "El replay usa el holdout permutado, no datos posteriores al corte, y "
+         "produccion_lotes.yml procesa los ocho lotes en una sola tarea en vez de una ejecución por período. No "
+         "hay tráfico HTTP real para medir errores en producción."),
         ("Qué haríamos primero", "Pedir telemetría y etiquetas con fecha, costos de inspección y paro, y capacidad "
          "por turno; correr el modelo en paralelo a la regla y comparar costo y fallas por tipo de producto antes "
          "de decidir si se escala."),
