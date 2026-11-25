@@ -14,6 +14,17 @@ from src.metricas import evaluate
 from src.pipeline import BusinessRule
 
 
+def orden_replay(holdout):
+    """Orden en que el replay recorre el holdout. Lo comparten el replay y el reentrenamiento."""
+    return holdout.sort_values("reading_id").sample(frac=1, random_state=42)
+
+
+def ordenar_simulacion(simulation, holdout):
+    """Devuelve las predicciones en el orden del replay, sin depender de cómo se leyeron."""
+    orden = orden_replay(holdout)["reading_id"].to_numpy()
+    return simulation.set_index("reading_id").loc[orden].reset_index()
+
+
 def run():
     backend = os.getenv('PSET4_BACKEND','local')
     if backend not in ('snowflake','local'):
@@ -27,7 +38,7 @@ def run():
     selection = json.loads(Path("docs/seleccion.json").read_text(encoding="utf-8"))
     winner = selection["models"][0]
     model = mlflow.sklearn.load_model(f'models:/{selection["model_name"]}/{winner["version"]}')
-    partitions = np.array_split(holdout.sort_values("reading_id").sample(frac=1, random_state=42).index.to_numpy(), 8)
+    partitions = np.array_split(orden_replay(holdout).index.to_numpy(), 8)
     rows, alerts, predictions = [], [], []
     for number, indices in enumerate(partitions, 1):
         batch = holdout.loc[indices].copy()
