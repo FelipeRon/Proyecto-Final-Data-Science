@@ -1,0 +1,63 @@
+id: disparo_deriva
+namespace: pset4
+description: >-
+  Disparo por métrica. Al terminar el monitoreo lee GET /monitoreo y, si el PSI
+  máximo supera el umbral, lanza el flujo de reentrenamiento con aprobación
+  manual. Cada evento de deriva se procesa una sola vez.
+inputs:
+  - id: umbral_psi
+    type: FLOAT
+    defaults: 0.25
+    description: Mismo corte que usa el replay para registrar alertas.
+concurrency:
+  limit: 1
+  behavior: QUEUE
+tasks:
+  - id: medir_deriva
+    type: io.kestra.plugin.scripts.shell.Commands
+    containerImage: "{{ envs.pset4_runner_image }}"
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      pullPolicy: NEVER
+    env:
+      PSET4_API_URI: "{{ envs.pset4_api_uri }}"
+      UMBRAL_PSI: "{{ inputs.umbral_psi }}"
+    commands:
+      - python -m monitoreo.disparo
+  - id: decidir
+    type: io.kestra.plugin.core.flow.If
+    condition: >-
+      {{ outputs.medir_deriva.vars.supera_umbral and
+      outputs.medir_deriva.vars.firma != kv('pset4_ultimo_disparo', errorOnMissing=false) }}
+    then:
+      - id: lanzar_reentrenamiento
+        type: io.kestra.plugin.core.flow.Subflow
+        namespace: pset4
+        flowId: reentrenamiento
+        wait: false
+        inputs:
+          disparador: >-
+            PSI {{ outputs.medir_deriva.vars.psi_max | numberFormat('0.0000') }}
+            > {{ inputs.umbral_psi }} en {{ outputs.medir_deriva.vars.variable ?? 'último lote' }},
+            lote {{ outputs.medir_deriva.vars.periodo }}
+          psi_max: "{{ outputs.medir_deriva.vars.psi_max }}"
+      - id: recordar_disparo
+        type: io.kestra.plugin.core.kv.Set
+        key: pset4_ultimo_disparo
+        value: "{{ outputs.medir_deriva.vars.firma }}"
+    else:
+      - id: sin_disparo
+        type: io.kestra.plugin.core.log.Log
+        message: >-
+          Sin reentrenamiento. PSI máximo {{ outputs.medir_deriva.vars.psi_max ?? 'sin datos' }}
+          con umbral {{ inputs.umbral_psi }}; evento ya procesado:
+          {{ outputs.medir_deriva.vars.firma == kv('pset4_ultimo_disparo', errorOnMissing=false) }}.
+triggers:
+  - id: tras_monitoreo
+    type: io.kestra.plugin.core.trigger.Flow
+    preconditions:
+      id: monitoreo_exitoso
+      flows:
+        - namespace: pset4
+          flowId: monitoreo
+          states: [SUCCESS]

@@ -1,5 +1,19 @@
 id: reentrenamiento
 namespace: pset4
+description: >-
+  Entrena un candidato, espera la aprobación manual y aplica la decisión sobre
+  el alias champion. Se lanza desde disparo_deriva cuando el PSI supera el
+  umbral, o a mano para el ciclo por calendario.
+inputs:
+  - id: disparador
+    type: STRING
+    defaults: calendario al madurar 6 lotes
+  - id: psi_max
+    type: FLOAT
+    required: false
+concurrency:
+  limit: 1
+  behavior: FAIL
 tasks:
   - id: evaluar_candidato
     type: io.kestra.plugin.scripts.shell.Commands
@@ -12,6 +26,7 @@ tasks:
         - "{{ envs.pset4_secrets_dir }}:/run/secrets:ro"
     env:
       KESTRA_TRACKING_URI: "{{ envs.pset4_tracking_uri }}"
+      PSET4_DISPARADOR: "{{ inputs.disparador }}"
     commands:
       - >-
         env_copy=$(mktemp); trap 'rm -f "$env_copy"' EXIT;
@@ -19,6 +34,62 @@ tasks:
         set -a; . "$env_copy"; set +a
       - export PSET4_BACKEND=snowflake MLFLOW_TRACKING_URI="$KESTRA_TRACKING_URI"
       - cd /app && python -m src.reentrenar
+  - id: resumen_para_aprobacion
+    type: io.kestra.plugin.core.log.Log
+    message: >-
+      Candidato v{{ outputs.evaluar_candidato.vars.version }}
+      (run {{ outputs.evaluar_candidato.vars.run_id }}) frente al champion
+      v{{ outputs.evaluar_candidato.vars.champion_version }}.
+      Disparador: {{ inputs.disparador }}; PSI máximo: {{ inputs.psi_max ?? 'no aplica' }}.
+      Mejora media de costo por 1.000 lecturas: {{ outputs.evaluar_candidato.vars.mejora_media_costo }}
+      con dispersión CV {{ outputs.evaluar_candidato.vars.dispersion_cv_costo }}.
+      Cumple el criterio de promoción: {{ outputs.evaluar_candidato.vars.califica }}.
+      Revise el candidato en MLflow y reanude esta ejecución con la decisión.
   - id: revision_manual
     type: io.kestra.plugin.core.flow.Pause
-    delay: PT24H
+    description: >-
+      Aprobación humana. Sin respuesta en 72 horas la ejecución se cancela y el
+      champion no cambia.
+    pauseDuration: PT72H
+    behavior: CANCEL
+    onResume:
+      - id: decision
+        type: SELECT
+        values: [rechazar, promover]
+        defaults: rechazar
+        description: promover mueve el alias champion al candidato; rechazar lo deja como está.
+      - id: responsable
+        type: STRING
+        description: Nombre de quien aprueba o rechaza.
+      - id: comentario
+        type: STRING
+        required: false
+        description: Motivo de la decisión.
+  - id: aplicar_decision
+    type: io.kestra.plugin.scripts.shell.Commands
+    containerImage: "{{ envs.pset4_runner_image }}"
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      pullPolicy: NEVER
+      volumes:
+        - "{{ envs.pset4_project_dir }}:/app"
+    env:
+      MLFLOW_TRACKING_URI: "{{ envs.pset4_tracking_uri }}"
+      DECISION: "{{ outputs.revision_manual.onResume.decision }}"
+      VERSION: "{{ outputs.evaluar_candidato.vars.version }}"
+      RESPONSABLE: "{{ outputs.revision_manual.onResume.responsable }}"
+      COMENTARIO: "{{ outputs.revision_manual.onResume.comentario ?? '' }}"
+    commands:
+      - >-
+        cd /app && python -m src.promover --decision "$DECISION" --version "$VERSION"
+        --responsable "$RESPONSABLE" --comentario "$COMENTARIO"
+  - id: verificar_api
+    type: io.kestra.plugin.scripts.shell.Commands
+    containerImage: "{{ envs.pset4_runner_image }}"
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      pullPolicy: NEVER
+    commands:
+      - >-
+        python -c 'import json, urllib.request;
+        print(json.load(urllib.request.urlopen("{{ envs.pset4_api_uri }}/modelo", timeout=30)))'

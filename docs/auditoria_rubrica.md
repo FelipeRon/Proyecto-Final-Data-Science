@@ -20,4 +20,4 @@ El mayor PSI de los controles fue 0,0720 y el del lote alterado 2,6330. El valor
 
 El [CI del primer commit](https://github.com/FelipeRon/Proyecto-Final-Data-Science/actions/runs/45466217941) pasó. Para calificar el commit de entrega, consulta su propia ejecución de CI.
 
-La [verificación desde un clon limpio](verificacion_reproducibilidad.md) cubre el Compose integrado, Snowflake, Kestra, el rollback y el reentrenamiento aislado. Para la consigna original quedan la prueba integral de RAW a OBT en una cuenta nueva, el disparo por métrica y la aprobación en Kestra, la publicación de la imagen en GHCR y el video.
+La [verificación desde un clon limpio](verificacion_reproducibilidad.md) cubre el Compose integrado, Snowflake, Kestra, el rollback y el reentrenamiento aislado. Para la consigna original quedan la prueba integral de RAW a OBT en una cuenta nueva, la ejecución del disparo por métrica y la aprobación en Kestra contra Snowflake y el MLflow restaurado, la publicación de la imagen en GHCR y el video.
