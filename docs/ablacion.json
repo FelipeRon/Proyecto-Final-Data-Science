@@ -1,0 +1,21 @@
+{
+  "name": "hist_boosting_without_derived",
+  "phase": "ablation",
+  "run_id": "5d2ef8332c4c450bb5bfbd54457e953a",
+  "cv_ap_mean": 0.8021225832900815,
+  "cv_ap_std": 0.0474052158107983,
+  "train_ap": 1.0,
+  "fold_train_ap_mean": 1.0,
+  "cv_cost_per_1000": 144812.94208066454,
+  "fit_seconds": 0.14910683400012203,
+  "cv_fit_seconds": 0.38719932500134746,
+  "gap_ap": 0.19787741670991854,
+  "fold_ap": [
+    0.8159551844531197,
+    0.8410729246705222,
+    0.7493396407466029
+  ],
+  "params": {},
+  "warnings": 0,
+  "learning_rate": 0.1
+}

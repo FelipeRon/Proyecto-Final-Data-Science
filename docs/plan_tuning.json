@@ -1,0 +1,10 @@
+{
+  "selected_families": [
+    "hist_boosting",
+    "random_forest",
+    "mlp"
+  ],
+  "configurations_per_family": 30,
+  "method": "ParameterSampler aleatorio con semilla, misma CV fija; 30 configuraciones por familia",
+  "scales": "C, alpha, var_smoothing, learning_rate y l2 en log; tamaños y profundidades discretos"
+}
