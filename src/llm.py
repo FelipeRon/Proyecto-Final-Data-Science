@@ -26,7 +26,7 @@ def run():
                 return saved
         result={'status':'not_executed','reason':'Se requiere API key privada y LLM_MODEL explícito; no hay respuestas ni métricas inventadas.',
                 'provider':provider,'protocol':'3 folds de entrenamiento; 20 filas por fold; ejemplos solo de su train; holdout nunca enviado',
-                'prompt_template':PROMPT,'scope':'La clasificación numérica sí admite prompting; esta comparación sigue pendiente.'}
+                'prompt_template':PROMPT,'scope':'La clasificación numérica sí admite prompting; no hay evidencia ejecutada para este snapshot del dataset.'}
         dump(DOCS/'llm.json',result);return result
     tracking();X=train[BASE];y=train[TARGET].to_numpy();records=[];start=time.perf_counter()
     with mlflow.start_run(run_name='llm_prompting'):

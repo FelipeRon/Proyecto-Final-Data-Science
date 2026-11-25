@@ -9,10 +9,12 @@ La comprobación partió del commit `961be00961fe4fd06aeeabbd5d4979f8c764cd32` c
 - **Rollback y reentrenamiento.** La API aislada reflejó el cambio 1 → 2 → 1. El entrenamiento de Snowflake registró el candidato versión 4 solo en el MLflow del clon. Conservó la decisión de no promover, con una diferencia media de costo de -USD 12.000 por 1.000 lecturas en los lotes de evaluación, frente a -USD 8.000 en el registro histórico.
 - **Alcance.** Se verificó la aplicación desde una OBT ya provisionada. La construcción completa de RAW a OBT con una cuenta de Snowflake nueva y los permisos de aprovisionamiento no se ejecutó. Se comprobó que la imagen contiene Spark 3.5.3 y que dbt autentica contra Snowflake.
 
-El workflow CD del commit original falló en el paso que construye y publica la imagen en GHCR. La imagen que usó esta verificación se construyó localmente desde el código fuente.
+El workflow CD del commit original falló en el paso que construye y publica la imagen en GHCR. La imagen que usó esta verificación se construyó localmente desde el código fuente. El CD del commit siguiente, `ae65fb5`, pasó: ejecutó las pruebas, construyó la imagen y la publicó en GHCR como `ghcr.io/feliperon/proyecto-final-data-science:ae65fb5e7e98d95fd24fd0f25696ae6114db2c5a`.
 
 - [CI del commit original](https://github.com/FelipeRon/Proyecto-Final-Data-Science/actions/runs/45466217941)
-- [CD del commit original](https://github.com/FelipeRon/Proyecto-Final-Data-Science/actions/runs/45466217890)
+- [CD del commit original](https://github.com/FelipeRon/Proyecto-Final-Data-Science/actions/runs/45466217890) (fallido)
+- [CI del commit `ae65fb5`](https://github.com/FelipeRon/Proyecto-Final-Data-Science/actions/runs/45469538596)
+- [CD del commit `ae65fb5`](https://github.com/FelipeRon/Proyecto-Final-Data-Science/actions/runs/45469538637) (imagen publicada en GHCR)
 
 ## Orquestación e imagen de ingesta
 

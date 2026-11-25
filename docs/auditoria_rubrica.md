@@ -18,6 +18,6 @@ El mayor PSI de los controles fue 0,0720 y el del lote alterado 2,6330. El valor
 
 ## Pendientes de entrega
 
-El [CI del primer commit](https://github.com/FelipeRon/Proyecto-Final-Data-Science/actions/runs/45466217941) pasó. Para calificar el commit de entrega, consulta su propia ejecución de CI.
+El [CI](https://github.com/FelipeRon/Proyecto-Final-Data-Science/actions/runs/45469538596) y el [CD](https://github.com/FelipeRon/Proyecto-Final-Data-Science/actions/runs/45469538637) del commit `ae65fb5` pasaron. El CD construyó la imagen y la publicó en GHCR como `ghcr.io/feliperon/proyecto-final-data-science:ae65fb5e7e98d95fd24fd0f25696ae6114db2c5a`. Para calificar un commit posterior, consulta sus propias ejecuciones.
 
-La [verificación desde un clon limpio](verificacion_reproducibilidad.md) cubre el Compose integrado, Snowflake, Kestra, el rollback y el reentrenamiento aislado. Para la consigna original quedan la prueba integral de RAW a OBT en una cuenta nueva, el disparo por métrica y la aprobación en Kestra, la publicación de la imagen en GHCR y el video.
+La [verificación desde un clon limpio](verificacion_reproducibilidad.md) cubre el Compose integrado, Snowflake, Kestra, el rollback y el reentrenamiento aislado. Para la consigna original quedan la prueba integral de RAW a OBT en una cuenta nueva, el disparo por métrica, la aprobación en Kestra y el video.
