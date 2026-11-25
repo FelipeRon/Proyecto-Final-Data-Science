@@ -54,6 +54,8 @@ Para reproducir el reentrenamiento usa una copia nueva sin `docs/reentrenamiento
 docker compose run --rm runner python -m src.reentrenar
 ```
 
+Las pruebas de comportamiento, contrato, modelo, respaldo y alertas están en `tests/`. El memo y los diagramas se regeneran con `python scripts/memo.py` y `python scripts/diagramas.py`.
+
 Para ensayar los flujos de Kestra en el servicio de PSET-02, habilita el montaje de volúmenes en su runner Docker y configura `ENV_PSET4_PROJECT_DIR` con la ruta del proyecto visible para el motor Linux. Importa `kestra/monitoreo.yml` antes de `kestra/produccion_lotes.yml`. Configura también `ENV_PSET4_SECRETS_DIR` en Kestra con la ruta de la carpeta de la llave, visible desde el motor Docker. El replay de Kestra publica en Snowflake y el flujo de monitoreo consulta la API. Para cargar resultados históricos desde CSV queda el comando independiente `python -m monitoreo.publicar`.
 
 ## 5. Respaldo y cambio de versión
@@ -98,5 +100,7 @@ Para una ejecución desde la fuente, construye `docker compose build spark`, imp
 - [Presentación ejecutiva](docs/PSet4_presentacion_Ron_Andrade.pdf)
 - [Historial de los PSets](docs/historial/)
 - [Auditoría de la rúbrica](docs/auditoria_rubrica.md)
+- [Calificación estimada](docs/calificacion_estimada.md)
+- [Arquitectura](docs/arquitectura.png) y [modelo dimensional](docs/modelo_dimensional.png)
 
 La [verificación desde un clon limpio](docs/verificacion_reproducibilidad.md) documenta los requisitos, las pruebas y los límites observados.
