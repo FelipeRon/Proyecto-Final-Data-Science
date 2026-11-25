@@ -219,8 +219,10 @@ def reproduce():
     return {'registry_uri':f'models:/{MODEL_NAME}@champion','reproduced':True,'metrics':now}
 
 def export_runs():
-    tracking();exp=mlflow.get_experiment_by_name(PROJECT)
-    rows=mlflow.search_runs([exp.experiment_id],max_results=10000)
+    tracking()
+    # Incluye las corridas de PSET-3 y las de reentrenamiento de PSET-4.
+    ids=[e.experiment_id for e in (mlflow.get_experiment_by_name(n) for n in (PROJECT,PROJECT+'-pset4')) if e]
+    rows=mlflow.search_runs(ids,max_results=10000)
     # No rutas privadas del host en la exportación de evidencia.
     rows.drop(columns=['artifact_uri'],errors='ignore').to_csv(DOCS/'corridas.csv',index=False)
     return rows

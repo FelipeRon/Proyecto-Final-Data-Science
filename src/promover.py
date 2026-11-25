@@ -15,7 +15,7 @@ from src.datos import PROJECT, dump
 
 NAME = PROJECT + "-modelo"
 CHAMPION = "champion"
-CANDIDATE = "candidato_pset4"
+CANDIDATE = "challenger"
 
 
 def decidir(decision, version, responsable, comentario, client=None,

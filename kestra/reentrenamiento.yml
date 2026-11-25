@@ -2,8 +2,8 @@ id: reentrenamiento
 namespace: pset4
 description: >-
   Entrena un candidato, espera la aprobación manual y aplica la decisión sobre
-  el alias champion. Se lanza desde disparo_deriva cuando el PSI supera el
-  umbral, o a mano para el ciclo por calendario.
+  el alias champion. Se lanza desde monitoreo cuando hay deriva con impacto o
+  caída sostenida de AP, o a mano para el ciclo por calendario.
 inputs:
   - id: disparador
     type: STRING
