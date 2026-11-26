@@ -41,7 +41,7 @@ Rango razonable: **86 a 91**. Lo que más pesa en contra es la falta del video.
 
 ## Descuentos que quedan
 
-- **Video** y su enlace en el memo (el memo lo marca como pendiente).
+- **Video**: ya entregado ([Google Drive](https://drive.google.com/file/d/18C2aJ86TmV3iDoHwG5BmqobG-oICIeeF/view?usp=sharing)) y enlazado en el README y en el memo; esta estimación no lo incluye.
 - **Capturas**: la evidencia de Kestra son IDs de ejecución y logs descritos; capturas de pantalla (pausa de aprobación, WARN, `/modelo`) la harían más convincente.
 - `kestra/produccion_lotes.yml` corre el replay completo en una tarea, no un ciclo por lote, y `monitoreo.yml` lee las métricas que escribe el replay en vez de calcularlas.
 - Tasas 4xx/5xx no se miden en el replay (se explica en el memo).

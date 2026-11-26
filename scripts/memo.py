@@ -25,7 +25,8 @@ DOCS = ROOT / "docs"
 OUT = DOCS / "PSet4_memo_Ron_Andrade.pdf"
 AUTHOR = "Felipe Ron Andrade / Ciencia de Datos"
 REPO = "https://github.com/FelipeRon/Proyecto-Final-Data-Science"
-VIDEO = "Enlace del video de demostración: pendiente de publicar."
+VIDEO_URL = "https://drive.google.com/file/d/18C2aJ86TmV3iDoHwG5BmqobG-oICIeeF/view?usp=sharing"
+VIDEO = f'Video de demostración: <link href="{VIDEO_URL}" color="#0f766e"><u>{VIDEO_URL}</u></link>.'
 
 TEAL = colors.HexColor("#0f766e")
 INK = colors.HexColor("#1f2933")
@@ -174,6 +175,9 @@ def build_story():
     story += section("La decisión de mantenimiento",
         "Detección de falla actual por lectura de AI4I. El servicio recomienda una inspección y el equipo "
         "de mantenimiento decide cómo actuar.", [
+        ("Video de demostración",
+         f'Recorrido de la infraestructura local en funcionamiento (Compose, Kestra, MLflow, API, tablero, replay, '
+         f'alertas, aprobación, rollback y respaldo): <link href="{VIDEO_URL}" color="#0f766e"><u>{VIDEO_URL}</u></link>'),
         ("Unidad, objetivo y horizonte",
          "Una observación es una lectura con sensores y tipo de producto. El target binario es machine_failure "
          "y la predicción corresponde al estado de la lectura actual: el horizonte es el turno en curso. AI4I es "
