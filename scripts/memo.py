@@ -12,7 +12,7 @@ from pypdf import PdfReader, PdfWriter
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import (Image, KeepTogether, PageBreak, Paragraph, SimpleDocTemplate,
                                 Spacer, Table, TableStyle)
@@ -26,36 +26,44 @@ OUT = DOCS / "PSet4_memo_Ron_Andrade.pdf"
 AUTHOR = "Felipe Ron Andrade / Ciencia de Datos"
 REPO = "https://github.com/FelipeRon/Proyecto-Final-Data-Science"
 VIDEO_URL = "https://drive.google.com/file/d/18C2aJ86TmV3iDoHwG5BmqobG-oICIeeF/view?usp=sharing"
-VIDEO = f'Video de demostración: <link href="{VIDEO_URL}" color="#0f766e"><u>{VIDEO_URL}</u></link>.'
+VIDEO = f'Video de demostración: <link href="{VIDEO_URL}" color="#245C79"><u>{VIDEO_URL}</u></link>.'
 
-TEAL = colors.HexColor("#0f766e")
-INK = colors.HexColor("#1f2933")
-MUTED = colors.HexColor("#52606d")
-RULE = colors.HexColor("#d9e2ec")
-HEAD = colors.HexColor("#102a43")
-ZEBRA = colors.HexColor("#eef6f5")
+# Formato heredado del memo del PSet 3 (scripts/build_report.py de PSET-3): estilos base de
+# reportlab en negro, tablas con encabezado azul claro y pie de página simple.
+TEAL = colors.HexColor("#245C79")
+INK = colors.black
+MUTED = colors.HexColor("#555555")
+RULE = colors.HexColor("#D9D9D9")
+HEAD = colors.HexColor("#DAE5ED")
+ZEBRA = colors.HexColor("#F2F5F7")
 RUST = colors.HexColor("#9a3412")
+DOC_TITLE = "Detección de falla actual con AI4I en operación"
+SUBTITLE = "PSet 4 | Felipe Ron Andrade | 26 de noviembre de 2026"
+MARGINS = dict(leftMargin=52, rightMargin=52, topMargin=38, bottomMargin=40)
+
+_base = getSampleStyleSheet()
+for _name in ["Title", "Heading1", "Heading2"]:
+    _base[_name].textColor = colors.black
+_base["Title"].fontSize, _base["Title"].leading = 20, 24
+_base["Heading1"].fontSize, _base["Heading1"].leading = 15, 18
+_base["Heading2"].fontSize, _base["Heading2"].leading = 11, 14
 
 S = {
-    "title": ParagraphStyle("title", fontName="Helvetica-Bold", fontSize=25, leading=30, textColor=INK,
-                            spaceAfter=10),
-    "lede": ParagraphStyle("lede", fontName="Helvetica", fontSize=10.5, leading=15, textColor=MUTED,
-                           spaceAfter=10),
-    "h": ParagraphStyle("h", fontName="Helvetica-Bold", fontSize=10.5, leading=14, textColor=TEAL,
-                        spaceBefore=9, spaceAfter=4),
-    "body": ParagraphStyle("body", fontName="Helvetica", fontSize=9, leading=13, textColor=INK,
-                           alignment=TA_LEFT, spaceAfter=3),
-    "cell": ParagraphStyle("cell", fontName="Helvetica", fontSize=7.6, leading=9.6, textColor=INK),
-    "cellh": ParagraphStyle("cellh", fontName="Helvetica-Bold", fontSize=7.6, leading=9.6,
-                            textColor=colors.white),
-    "note": ParagraphStyle("note", fontName="Helvetica", fontSize=7.6, leading=10, textColor=MUTED,
-                           spaceBefore=3),
-    "code": ParagraphStyle("code", fontName="Courier", fontSize=7.6, leading=10, textColor=INK,
-                           backColor=colors.HexColor("#f5f7fa"), borderPadding=5, spaceBefore=3,
-                           spaceAfter=6),
+    "doctitle": _base["Title"],
+    "title": _base["Heading1"],
+    "h": _base["Heading2"],
+    "lede": ParagraphStyle("lede", fontName="Helvetica", fontSize=9.3, leading=12.5, spaceAfter=7),
+    "body": ParagraphStyle("body", fontName="Helvetica", fontSize=9.3, leading=12.5, alignment=TA_LEFT,
+                           spaceAfter=7),
+    "cell": ParagraphStyle("cell", fontName="Helvetica", fontSize=7.5, leading=10),
+    "cellh": ParagraphStyle("cellh", fontName="Helvetica", fontSize=7.5, leading=10),
+    "note": ParagraphStyle("note", fontName="Helvetica", fontSize=7.5, leading=10, spaceAfter=5),
+    "code": ParagraphStyle("code", fontName="Courier", fontSize=7.5, leading=10,
+                           backColor=colors.HexColor("#F2F5F7"), borderPadding=5, spaceBefore=3,
+                           spaceAfter=7),
 }
 
-state = {"total": 0}
+state = {"total": 0, "sec": 0}
 
 
 def usd(value):
@@ -72,22 +80,19 @@ def pct(value, digits=1):
 
 def page(canvas, doc):
     canvas.saveState()
-    width, height = A4
-    canvas.setFillColor(TEAL)
-    canvas.rect(0, height - 6, width, 6, stroke=0, fill=1)
-    canvas.setFont("Helvetica-Bold", 7)
-    canvas.drawString(20 * mm, height - 20 * mm, "PSET 04 / PROYECTO FINAL")
-    canvas.setStrokeColor(RULE)
-    canvas.line(20 * mm, 16 * mm, width - 20 * mm, 16 * mm)
-    canvas.setFillColor(MUTED)
-    canvas.setFont("Helvetica", 6.8)
-    canvas.drawString(20 * mm, 12 * mm, AUTHOR)
-    total = state["total"] or doc.page
-    canvas.drawRightString(width - 20 * mm, 12 * mm, f"{doc.page:02d}  /  {total:02d}")
+    canvas.setFont("Helvetica", 8)
+    canvas.drawRightString(A4[0] - 43, 23, f"Felipe Ron Andrade | PSet 4 | {doc.page}")
     canvas.restoreState()
 
 
 def p(text, style="body"):
+    if style == "title":
+        if text.startswith("Anexo"):
+            return Paragraph(text.replace(" · ", " "), S["title"])
+        state["sec"] += 1
+        if state["sec"] == 1:  # como en el PSet 3: título del documento y la sección 1 bajo él
+            return Paragraph(f"1 {text}", S["h"])
+        text = f"{state['sec']} {text}"
     return Paragraph(text, S[style])
 
 
@@ -103,9 +108,10 @@ def section(title, lede, blocks):
 def table(rows, widths, header=True, zebra=True):
     data = [[p(str(c), "cellh" if header and i == 0 else "cell") for c in row]
             for i, row in enumerate(rows)]
-    t = Table(data, colWidths=widths, repeatRows=1 if header else 0)
-    style = [("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 3.5),
-             ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5), ("LEFTPADDING", (0, 0), (-1, -1), 5)]
+    t = Table(data, colWidths=widths, repeatRows=1 if header else 0, hAlign="LEFT")
+    style = [("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("GRID", (0, 0), (-1, -1), .4, RULE),
+             ("LEFTPADDING", (0, 0), (-1, -1), 6), ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+             ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5)]
     if header:
         style.append(("BACKGROUND", (0, 0), (-1, 0), HEAD))
     if zebra:
@@ -169,15 +175,15 @@ def build_story():
     saving = rule_mean - model_mean
     lote6 = mon[mon.periodo == 6].iloc[0]
     lote8 = mon[mon.periodo == 8].iloc[0]
-    W = A4[0] - 40 * mm
-    story = []
+    W = A4[0] - 104
+    story = [p(DOC_TITLE, "doctitle"), p(SUBTITLE)]
 
     story += section("La decisión de mantenimiento",
         "Detección de falla actual por lectura de AI4I. El servicio recomienda una inspección y el equipo "
         "de mantenimiento decide cómo actuar.", [
         ("Video de demostración",
          f'Recorrido de la infraestructura local en funcionamiento (Compose, Kestra, MLflow, API, tablero, replay, '
-         f'alertas, aprobación, rollback y respaldo): <link href="{VIDEO_URL}" color="#0f766e"><u>{VIDEO_URL}</u></link>'),
+         f'alertas, aprobación, rollback y respaldo): <link href="{VIDEO_URL}" color="#245C79"><u>{VIDEO_URL}</u></link>'),
         ("Unidad, objetivo y horizonte",
          "Una observación es una lectura con sensores y tipo de producto. El target binario es machine_failure "
          "y la predicción corresponde al estado de la lectura actual: el horizonte es el turno en curso. AI4I es "
@@ -486,9 +492,8 @@ def cambios_story():
 def main():
     body = build_story() + cambios_story()
     tmp = DOCS / "_memo_cuerpo.pdf"
-    for _ in range(2):
-        doc = SimpleDocTemplate(str(tmp), pagesize=A4, leftMargin=20 * mm, rightMargin=20 * mm,
-                                topMargin=27 * mm, bottomMargin=22 * mm, title="PSet4 memo técnico",
+    for _ in range(1):
+        doc = SimpleDocTemplate(str(tmp), pagesize=A4, **MARGINS, title="PSet4 memo técnico",
                                 author="Felipe Ron Andrade")
         doc.build(list(body), onFirstPage=page, onLaterPages=page)
         state["total"] = len(PdfReader(tmp).pages)
