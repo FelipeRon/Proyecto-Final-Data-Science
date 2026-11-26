@@ -387,19 +387,6 @@ def build_story():
         p(f"Challenger versión {cycle['version']}, run {cycle['run_id']}. Mejora media "
           f"{usd(cycle['mejora_media_costo'])} USD frente a un umbral de {usd(cycle['dispersion_cv_costo'])} USD "
           "(una desviación del costo de CV): no califica, se rechaza y champion sigue en la versión 1.", "note")])]
-    story += [KeepTogether([p(h, "h"), p(b)]) for h, b in [
-        ("Ejecución en Kestra contra Snowflake", "El ciclo se repitió de punta a punta en un Compose aislado con la "
-         "cuenta del proyecto. produccion_lotes (6KqcWW5Oj7kS1Z5kGK6rJf) leyó la OBT y escribió 2.000 predicciones, "
-         "ocho lotes y la alerta de PSI. monitoreo (yux1c9BOTl5vdnZRGaaQs) registró el WARN con cuatro alertas y lanzó "
-         "reentrenamiento por «deriva de datos con impacto en el lote 6»; una segunda ejecución no lo repitió. "
-         "reentrenamiento (1HbXsDSW3QCj0NondybdIm) registró el challenger, reprodujo exactamente las cifras de la "
-         "tabla y quedó en pausa: reanudado con promover, la regla lo bloqueó y champion siguió en 1. Para recorrer la "
-         "rama de promoción, en un registro aislado se forzó califica=true: champion pasó a la nueva versión, "
-         "GET /modelo la reflejó y luego se devolvió a la versión 1 sin reconstruir la imagen."),
-        ("Fallo encontrado", "Snowflake devuelve PREDICCIONES ordenada por UUID y eso cambiaba los pliegues de la CV "
-         "del reentrenamiento (−USD 12.000 en vez de −8.000). Se corrigió restituyendo el orden del replay, con una "
-         "prueba en CI."),
-    ]]
     story.append(PageBreak())
 
     sub = sub.assign(recall=lambda d: (d.fallas - d.fallas_omitidas) / d.fallas,
